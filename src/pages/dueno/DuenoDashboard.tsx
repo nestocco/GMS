@@ -17,12 +17,12 @@ import type { AuthUser } from '../../types'
 import Sidebar from '../../components/shared/Sidebar'
 import Topbar from '../../components/shared/Topbar'
 
-import KpiCard        from '../../components/widgets/KpiCard'
-import ChartBar       from '../../components/widgets/ChartBar'
-import DonutChart     from '../../components/widgets/DonutChart'
-import AlertsList     from '../../components/widgets/AlertsList'
+import KpiCard from '../../components/widgets/KpiCard'
+import ChartBar from '../../components/widgets/ChartBar'
+import DonutChart from '../../components/widgets/DonutChart'
+import AlertsList from '../../components/widgets/AlertsList'
 import BranchesStatus from '../../components/widgets/BranchesStatus'
-import EdgeMonitor    from '../../components/widgets/EdgeMonitor'
+import EdgeMonitor from '../../components/widgets/EdgeMonitor'
 
 import {
   WIDGET_CATALOG,
@@ -35,26 +35,26 @@ import { useDashboardLayout } from '../../hooks/useDashboardLayout'
 import ClaimGuard from '../../components/shared/ClaimGuard'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
 
-import Socios        from '../socios/Socios'
-import Membresias    from '../membresias/Membresias'
-import Cobros        from '../cobros/Cobros'
-import Alertas       from '../alertas/Alertas'
-import RolesStaff    from './roles/RolesStaff'
-import Sucursales    from './sucursales/Sucursales'
+import Socios from '../socios/Socios'
+import Membresias from '../membresias/Membresias'
+import Cobros from '../cobros/Cobros'
+import Alertas from '../alertas/Alertas'
+import RolesStaff from './roles/RolesStaff'
+import Sucursales from './sucursales/Sucursales'
 import Configuracion from './configuracion/Configuracion'
 
 import { useLocation } from 'react-router-dom'
 
 // ─── Constantes de grilla ─────────────────────────────────────────────────────
-const COLS    = 12
-const ROW_H   = 110
-const MARGIN  = 10
+const COLS = 12
+const ROW_H = 110
+const MARGIN = 10
 const PADDING = 24
 
 // Constantes para miniaturas del catálogo
-const THUMB_COL_W      = 90
-const THUMB_DISPLAY_W  = 280
-const THUMB_SCALE_MIN  = 0.45
+const THUMB_COL_W = 90
+const THUMB_DISPLAY_W = 280
+const THUMB_SCALE_MIN = 0.45
 
 // ─── CSS crítico inyectado en <head> ─────────────────────────────────────────
 // Garantiza el funcionamiento del resize handle y el placeholder de drag,
@@ -88,15 +88,15 @@ interface Props { user: AuthUser }
 // ─── Renderer de contenido por tipo ──────────────────────────────────────────
 function WidgetContent({ type }: { type: WidgetType }) {
   switch (type) {
-    case 'kpi_ingresos':    return <KpiCard label="Ingresos del mes"   value="$487.200" sub="▲ 12% vs mes anterior"  pct={74} />
-    case 'kpi_socios':      return <KpiCard label="Socios activos"     value="187"      sub="de 200 proyectados"      pct={93} />
-    case 'kpi_asistencia':  return <KpiCard label="Asistencia hoy"     value="43"       sub="Pico: 11:00 · 18 socios" pct={58} />
-    case 'kpi_alertas':     return <KpiCard label="Alertas abiertas"   value="3"        sub="2 críticas · 1 media"   alert />
-    case 'chart_ingresos':  return <ChartBar />
-    case 'donut_membresias':return <DonutChart center="187" centerSub="socios" />
-    case 'list_alertas':    return <AlertsList />
+    case 'kpi_ingresos': return <KpiCard label="Ingresos del mes" value="$487.200" sub="▲ 12% vs mes anterior" pct={74} />
+    case 'kpi_socios': return <KpiCard label="Socios activos" value="187" sub="de 200 proyectados" pct={93} />
+    case 'kpi_asistencia': return <KpiCard label="Asistencia hoy" value="43" sub="Pico: 11:00 · 18 socios" pct={58} />
+    case 'kpi_alertas': return <KpiCard label="Alertas abiertas" value="3" sub="2 críticas · 1 media" alert />
+    case 'chart_ingresos': return <ChartBar />
+    case 'donut_membresias': return <DonutChart center="187" centerSub="socios" />
+    case 'list_alertas': return <AlertsList />
     case 'branches_status': return <BranchesStatus />
-    case 'edge_monitor':    return <EdgeMonitor />
+    case 'edge_monitor': return <EdgeMonitor />
     default: return null
   }
 }
@@ -106,9 +106,9 @@ function WidgetThumbnail({ type }: { type: WidgetType }) {
   const def = WIDGET_CATALOG.find(w => w.type === type)
   if (!def) return null
   const actualW = def.defaultW * THUMB_COL_W + (def.defaultW - 1) * MARGIN
-  const actualH = def.defaultH * ROW_H       + (def.defaultH - 1) * MARGIN
-  const scale   = Math.max(THUMB_SCALE_MIN, THUMB_DISPLAY_W / actualW)
-  const thumbH  = Math.round(actualH * scale)
+  const actualH = def.defaultH * ROW_H + (def.defaultH - 1) * MARGIN
+  const scale = Math.max(THUMB_SCALE_MIN, THUMB_DISPLAY_W / actualW)
+  const thumbH = Math.round(actualH * scale)
 
   return (
     <div style={{
@@ -130,17 +130,17 @@ function WidgetThumbnail({ type }: { type: WidgetType }) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function DuenoDashboard({ user }: Props) {
   const location = useLocation()
-  const path     = location.pathname
-  const role     = (user.role ?? 'R1_DUENO') as UserRole
+  const path = location.pathname
+  const role = (user.role ?? 'R1_DUENO') as UserRole
 
   const { layout: savedLayout, widgets: savedWidgets, loading, save } =
     useDashboardLayout(user.id, role)
 
-  const [layout, setLayout]          = useState<Layout[]>(savedLayout)
-  const [visibleIds, setVisible]      = useState<WidgetType[]>(savedWidgets.map(w => w.type))
-  const [editMode, setEditMode]       = useState(false)
+  const [layout, setLayout] = useState<Layout[]>(savedLayout)
+  const [visibleIds, setVisible] = useState<WidgetType[]>(savedWidgets.map(w => w.type))
+  const [editMode, setEditMode] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
-  const [containerW, setContainerW]   = useState(0)
+  const [containerW, setContainerW] = useState(0)
 
   // Preview de drop: posición calculada mientras el usuario arrastra sobre la grilla
   const [dropPreview, setDropPreview] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
@@ -219,13 +219,13 @@ export default function DuenoDashboard({ user }: Props) {
     const el = gridContainerRef.current
     if (!el || !droppingTypeRef.current) return null
     const rect = el.getBoundingClientRect()
-    const def  = WIDGET_CATALOG.find(d => d.type === droppingTypeRef.current)
+    const def = WIDGET_CATALOG.find(d => d.type === droppingTypeRef.current)
     if (!def) return null
     // Restar el padding izquierdo del contenedor — la grilla empieza después del padding
     const relX = clientX - rect.left - PADDING
     const relY = clientY - rect.top
-    const col  = Math.max(0, Math.min(Math.floor(relX / (colWidth + MARGIN)), COLS - def.defaultW))
-    const row  = Math.max(0, Math.floor(relY / (ROW_H + MARGIN)))
+    const col = Math.max(0, Math.min(Math.floor(relX / (colWidth + MARGIN)), COLS - def.defaultW))
+    const row = Math.max(0, Math.floor(relY / (ROW_H + MARGIN)))
     return { x: col, y: row, w: def.defaultW, h: def.defaultH }
   }
 
@@ -247,10 +247,10 @@ export default function DuenoDashboard({ user }: Props) {
   const isHome = path === '/dashboard' || path === '/dashboard/'
 
   const renderSection = () => {
-    if (path.startsWith('/dashboard/socios'))        return <Socios user={user} />
-    if (path.startsWith('/dashboard/membresias'))    return <Membresias user={user} />
-    if (path.startsWith('/dashboard/cobros'))        return <Cobros user={user} />
-    if (path.startsWith('/dashboard/alertas'))       return <Alertas user={user} />
+    if (path.startsWith('/dashboard/socios')) return <Socios user={user} />
+    if (path.startsWith('/dashboard/membresias')) return <Membresias user={user} />
+    if (path.startsWith('/dashboard/cobros')) return <Cobros user={user} />
+    if (path.startsWith('/dashboard/alertas')) return <Alertas user={user} />
     if (path.startsWith('/dashboard/roles'))
       return (
         <ClaimGuard
@@ -260,7 +260,7 @@ export default function DuenoDashboard({ user }: Props) {
           <RolesStaff user={user} />
         </ClaimGuard>
       )
-    if (path.startsWith('/dashboard/sucursales'))    return <Sucursales user={user} />
+    if (path.startsWith('/dashboard/sucursales')) return <Sucursales user={user} />
     if (path.startsWith('/dashboard/configuracion')) return <Configuracion user={user} />
     if (path.startsWith('/dashboard/exportar'))
       return (
@@ -320,7 +320,7 @@ export default function DuenoDashboard({ user }: Props) {
                     padding: '7px 16px', borderRadius: 8,
                     fontSize: 12, fontWeight: 700, cursor: 'pointer',
                     background: editMode ? 'var(--green)' : 'var(--surface2)',
-                    color:       editMode ? '#0a120a'     : 'var(--text)',
+                    color: editMode ? '#0a120a' : 'var(--text)',
                     border: `1px solid ${editMode ? 'var(--green)' : 'var(--border2)'}`,
                     transition: 'all 0.2s',
                   }}
@@ -338,8 +338,8 @@ export default function DuenoDashboard({ user }: Props) {
                 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                     stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                   <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600 }}>Modo edición</span>
                   <span style={{ fontSize: 11, color: 'var(--muted)' }}>
@@ -405,10 +405,10 @@ export default function DuenoDashboard({ user }: Props) {
                       position: 'absolute',
                       zIndex: 5,
                       pointerEvents: 'none',
-                      left:   PADDING + dropPreview.x * (colWidth + MARGIN),
-                      top:    dropPreview.y * (ROW_H + MARGIN),
-                      width:  dropPreview.w * colWidth  + (dropPreview.w - 1) * MARGIN,
-                      height: dropPreview.h * ROW_H     + (dropPreview.h - 1) * MARGIN,
+                      left: PADDING + dropPreview.x * (colWidth + MARGIN),
+                      top: dropPreview.y * (ROW_H + MARGIN),
+                      width: dropPreview.w * colWidth + (dropPreview.w - 1) * MARGIN,
+                      height: dropPreview.h * ROW_H + (dropPreview.h - 1) * MARGIN,
                       background: 'rgba(143,188,143,0.12)',
                       border: '2px dashed rgba(143,188,143,0.7)',
                       borderRadius: 12,
@@ -418,103 +418,103 @@ export default function DuenoDashboard({ user }: Props) {
                 )}
 
                 {containerW > 0 && (
-                <GridLayout
-                  layout={activeLayout}
-                  cols={COLS}
-                  rowHeight={ROW_H}
-                  width={containerW - PADDING * 2}
-                  margin={[MARGIN, MARGIN]}
-                  containerPadding={[0, 0]}
-                  isDraggable={editMode}
-                  isResizable={editMode}
-                  compactType={null}
-                  preventCollision={true}
-                  useCSSTransforms={false}
-                  onDragStop={(l) => setLayout(l)}
-                  onResizeStop={(l) => setLayout(l)}
-                  draggableHandle=".widget-drag-handle"
-                  resizeHandles={['se']}
-                  style={{ position: 'relative', zIndex: 1 }}
-                >
-                  {visibleIds.map(type => {
-                    const def = WIDGET_CATALOG.find(w => w.type === type)
-                    return (
-                      <div
-                        key={type}
-                        style={{
-                          // FIX resize: position:relative es requerido por react-resizable
-                          // para que el handle se posicione correctamente
-                          position: 'relative',
-                          background: 'var(--surface)',
-                          border: editMode
-                            ? '1px solid rgba(143,188,143,0.35)'
-                            : '1px solid var(--border2)',
-                          borderRadius: 12,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          // overflow:visible para que el handle no quede recortado
-                          overflow: 'visible',
-                          transition: 'border-color 0.15s, box-shadow 0.2s',
-                          boxShadow: editMode
-                            ? '0 4px 20px rgba(0,0,0,0.45)'
-                            : 'none',
-                        }}
-                      >
-                        {/* Drag handle — siempre en DOM, height 0 fuera de edit mode */}
+                  <GridLayout
+                    layout={activeLayout}
+                    cols={COLS}
+                    rowHeight={ROW_H}
+                    width={containerW - PADDING * 2}
+                    margin={[MARGIN, MARGIN]}
+                    containerPadding={[0, 0]}
+                    isDraggable={editMode}
+                    isResizable={editMode}
+                    compactType={null}
+                    preventCollision={true}
+                    useCSSTransforms={false}
+                    onDragStop={(l) => setLayout(l)}
+                    onResizeStop={(l) => setLayout(l)}
+                    draggableHandle=".widget-drag-handle"
+                    resizeHandles={['se']}
+                    style={{ position: 'relative', zIndex: 1 }}
+                  >
+                    {visibleIds.map(type => {
+                      const def = WIDGET_CATALOG.find(w => w.type === type)
+                      return (
                         <div
-                          className="widget-drag-handle"
+                          key={type}
                           style={{
-                            height:    editMode ? 30 : 0,
-                            minHeight: editMode ? 30 : 0,
-                            overflow:  'hidden',
-                            background: 'rgba(143,188,143,0.07)',
-                            borderBottom: editMode ? '1px solid rgba(143,188,143,0.12)' : 'none',
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            padding: editMode ? '0 10px' : 0,
-                            cursor: 'grab', flexShrink: 0, userSelect: 'none',
-                            borderRadius: '12px 12px 0 0',
-                            transition: 'height 0.15s, min-height 0.15s',
+                            // FIX resize: position:relative es requerido por react-resizable
+                            // para que el handle se posicione correctamente
+                            position: 'relative',
+                            background: 'var(--surface)',
+                            border: editMode
+                              ? '1px solid rgba(143,188,143,0.35)'
+                              : '1px solid var(--border2)',
+                            borderRadius: 12,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            // overflow:visible para que el handle no quede recortado
+                            overflow: 'visible',
+                            transition: 'border-color 0.15s, box-shadow 0.2s',
+                            boxShadow: editMode
+                              ? '0 4px 20px rgba(0,0,0,0.45)'
+                              : 'none',
                           }}
                         >
-                          <div style={{ display: 'flex', gap: 3 }}>
-                            {[0,1,2].map(i => (
-                              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {[0,1].map(j => (
-                                  <div key={j} style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--muted)' }} />
-                                ))}
-                              </div>
-                            ))}
-                          </div>
-                          <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600 }}>
-                            {def?.label ?? type}
-                          </span>
-                          <button
-                            onMouseDown={e => e.stopPropagation()}
-                            onClick={() => removeWidget(type)}
+                          {/* Drag handle — siempre en DOM, height 0 fuera de edit mode */}
+                          <div
+                            className="widget-drag-handle"
                             style={{
-                              background: 'rgba(248,113,113,0.15)', border: 'none',
-                              color: 'var(--red)', width: 18, height: 18, borderRadius: 4,
-                              cursor: 'pointer', fontSize: 14,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                              height: editMode ? 30 : 0,
+                              minHeight: editMode ? 30 : 0,
+                              overflow: 'hidden',
+                              background: 'rgba(143,188,143,0.07)',
+                              borderBottom: editMode ? '1px solid rgba(143,188,143,0.12)' : 'none',
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              padding: editMode ? '0 10px' : 0,
+                              cursor: 'grab', flexShrink: 0, userSelect: 'none',
+                              borderRadius: '12px 12px 0 0',
+                              transition: 'height 0.15s, min-height 0.15s',
                             }}
-                          >×</button>
-                        </div>
+                          >
+                            <div style={{ display: 'flex', gap: 3 }}>
+                              {[0, 1, 2].map(i => (
+                                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  {[0, 1].map(j => (
+                                    <div key={j} style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--muted)' }} />
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                            <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600 }}>
+                              {def?.label ?? type}
+                            </span>
+                            <button
+                              onMouseDown={e => e.stopPropagation()}
+                              onClick={() => removeWidget(type)}
+                              style={{
+                                background: 'rgba(248,113,113,0.15)', border: 'none',
+                                color: 'var(--red)', width: 18, height: 18, borderRadius: 4,
+                                cursor: 'pointer', fontSize: 14,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                              }}
+                            >×</button>
+                          </div>
 
-                        {/* Contenido: overflow:hidden aquí, no en el wrapper */}
-                        <div style={{
-                          flex: 1,
-                          overflow: 'hidden',
-                          borderRadius: editMode ? '0 0 11px 11px' : 11,
-                          opacity: editMode ? 0.5 : 1,
-                          transition: 'opacity 0.2s',
-                          pointerEvents: editMode ? 'none' : 'auto',
-                        }}>
-                          <WidgetContent type={type} />
+                          {/* Contenido: overflow:hidden aquí, no en el wrapper */}
+                          <div style={{
+                            flex: 1,
+                            overflow: 'hidden',
+                            borderRadius: editMode ? '0 0 11px 11px' : 11,
+                            opacity: editMode ? 0.5 : 1,
+                            transition: 'opacity 0.2s',
+                            pointerEvents: editMode ? 'none' : 'auto',
+                          }}>
+                            <WidgetContent type={type} />
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                </GridLayout>
+                      )
+                    })}
+                  </GridLayout>
                 )}
               </div>
 
@@ -555,7 +555,7 @@ export default function DuenoDashboard({ user }: Props) {
                   }}>
                     {catalogAvailable.length === 0 ? (
                       <p style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'center', marginTop: 40 }}>
-                        Todos los widgets están activos
+                        Todoss los widgets están activos
                       </p>
                     ) : catalogAvailable.map(w => {
                       const def = WIDGET_CATALOG.find(d => d.type === w.type)!
