@@ -1,0 +1,7 @@
+# Desde la carpeta del proyecto
+node tools/tests/rls-jwt.test.mjs
+
+# Si la contraseña es diferente a GmsTest2024!
+TEST_PASSWORD=TuContraseña node tools/tests/rls-jwt.test.mjs
+
+TEST_PASSWORD=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoc2xweG92emZwbHV0cnprb2l3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE5NTk3MiwiZXhwIjoyMDkxNzcxOTcyfQ.5Rby8XleUXHqRnSsYHNH9425xlzd6UxO4VlSEYY5KVY node tools/tests/rls-jwt.test.mjs

@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --bg:         #0F1410;
+  --surface:    #141A14;
+  --surface2:   #1A221A;
+  --green-deep: #2D5A27;
+  --green:      #8FBC8F;
+  --metal:      #8B9E8B;
+  --warm:       #7A5A4A;
+  --warm-light: #C8956A;
+  --text:       #E8EDE8;
+  --muted:      #5A7060;
+  --border:     rgba(143,188,143,0.08);
+  --border2:    rgba(143,188,143,0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  margin: 0;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+@keyframes gms-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gms-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
