@@ -149,6 +149,9 @@ export default function DuenoDashboard({ user }: Props) {
   // Ref al contenedor de la grilla (para calcular posición del drop)
   const gridContainerRef = useRef<HTMLDivElement>(null)
 
+  // ─── Routing ───────────────────────────────────────────────────────────────
+  const isHome = path === '/dashboard' || path === '/dashboard/'
+
   // ── Inyectar CSS crítico una sola vez ──
   useEffect(() => {
     const id = 'gms-rgl-critical'
@@ -169,13 +172,20 @@ export default function DuenoDashboard({ user }: Props) {
   }, [loading])
 
   // ── Ancho del contenedor ──
+  // Depende de isHome: cuando el div del grid remonta al volver al dashboard,
+  // el efecto se re-ejecuta y re-adjunta el observer al nuevo elemento DOM.
+  // También descartamos width=0, que Chrome dispara al desmontar el elemento.
   useEffect(() => {
+    if (!isHome) return
     const el = gridContainerRef.current
     if (!el) return
-    const obs = new ResizeObserver(e => setContainerW(e[0].contentRect.width))
+    const obs = new ResizeObserver(e => {
+      const w = e[0].contentRect.width
+      if (w > 0) setContainerW(w)
+    })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [])
+  }, [isHome])
 
   const colWidth = (containerW - PADDING * 2 - (COLS - 1) * MARGIN) / COLS
 
@@ -244,8 +254,6 @@ export default function DuenoDashboard({ user }: Props) {
   const catalogAvailable = widgetsForRole(role).filter(w => !visibleIds.includes(w.type))
 
   // ─── Routing ───────────────────────────────────────────────────────────────
-  const isHome = path === '/dashboard' || path === '/dashboard/'
-
   const renderSection = () => {
     if (path.startsWith('/dashboard/socios')) return <Socios user={user} />
     if (path.startsWith('/dashboard/membresias')) return <Membresias user={user} />
