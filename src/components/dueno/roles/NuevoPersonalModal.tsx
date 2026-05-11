@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Eye, EyeOff, RefreshCw } from 'lucide-react'
+import { X, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import type { UserRole, StaffRol } from '../../../types'
 import StyledSelect from '../../shared/StyledSelect'
@@ -7,15 +7,10 @@ import StyledSelect from '../../shared/StyledSelect'
 interface Branch { id: string; nombre: string }
 
 const TARGET_ROLES: { value: StaffRol; label: string; allowed: UserRole[] }[] = [
-  { value: 'R2_ENCARGADO',  label: 'Encargado',   allowed: ['R1_DUENO'] },
-  { value: 'R3_STAFF',      label: 'Staff',        allowed: ['R1_DUENO', 'R2_ENCARGADO'] },
-  { value: 'R4_ENTRENADOR', label: 'Entrenador',   allowed: ['R1_DUENO'] },
+  { value: 'R2_ENCARGADO', label: 'Encargado', allowed: ['R1_DUENO'] },
+  { value: 'R3_STAFF', label: 'Staff', allowed: ['R1_DUENO', 'R2_ENCARGADO'] },
+  { value: 'R4_ENTRENADOR', label: 'Entrenador', allowed: ['R1_DUENO'] },
 ]
-
-function generatePassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$'
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
 
 interface Props {
   callerRole: UserRole
@@ -24,9 +19,9 @@ interface Props {
 }
 
 export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: Props) {
-  const [email, setEmail]         = useState('')
-  const [password, setPassword]   = useState(generatePassword())
-  const [showPwd, setShowPwd]     = useState(false)
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [showPwd, setShowPwd]   = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName]   = useState('')
   const [phone, setPhone]         = useState('')
@@ -38,7 +33,7 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
   const [error, setError]         = useState<string | null>(null)
 
   const availableRoles = TARGET_ROLES.filter(r => r.allowed.includes(callerRole))
-  const canSubmit      = !loading
+  const canSubmit = !loading
 
   useEffect(() => {
     async function loadBranches() {
@@ -75,14 +70,14 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
     setLoading(true)
     const { data, error: fnErr } = await supabase.functions.invoke('crear-personal', {
       body: {
-        email:      email.trim(),
+        email: email.trim(),
         password,
         first_name: firstName.trim(),
-        last_name:  lastName.trim(),
-        phone:      phone.trim() || null,
-        dni:        dni.trim()   || null,
+        last_name: lastName.trim(),
+        phone: phone.trim() || null,
+        dni: dni.trim() || null,
         role,
-        branch_id:  branchId,
+        branch_id: branchId,
       },
     })
     setLoading(false)
@@ -144,7 +139,6 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="usuario@email.com"
                   required
                   style={inputStyle}
                 />
@@ -158,26 +152,18 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    style={{ ...inputStyle, paddingRight: 68 }}
+                    style={{ ...inputStyle, paddingRight: 38 }}
                   />
-                  <div style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 4 }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowPwd(v => !v)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 2 }}
-                    >
-                      {showPwd ? <EyeOff size={13} /> : <Eye size={13} />}
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="nuevo-personal-btn-gen-password"
-                      onClick={() => setPassword(generatePassword())}
-                      title="Generar contraseña"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 2 }}
-                    >
-                      <RefreshCw size={12} />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd(v => !v)}
+                    style={{
+                      position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 2,
+                    }}
+                  >
+                    {showPwd ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </button>
                 </div>
               </div>
             </div>
@@ -195,7 +181,6 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                   data-testid="nuevo-personal-input-firstname"
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
-                  placeholder="Nombre"
                   required
                   style={inputStyle}
                 />
@@ -206,7 +191,6 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                   data-testid="nuevo-personal-input-lastname"
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
-                  placeholder="Apellido"
                   required
                   style={inputStyle}
                 />
@@ -217,7 +201,6 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                   data-testid="nuevo-personal-input-phone"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="+54 11 0000-0000"
                   style={inputStyle}
                 />
               </div>
@@ -227,7 +210,6 @@ export default function NuevoPersonalModal({ callerRole, onClose, onCreated }: P
                   data-testid="nuevo-personal-input-dni"
                   value={dni}
                   onChange={e => setDni(e.target.value)}
-                  placeholder="12.345.678"
                   style={inputStyle}
                 />
               </div>
@@ -325,7 +307,6 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid var(--border2)', background: 'var(--surface2)',
   color: 'var(--text)', fontSize: 12, outline: 'none', boxSizing: 'border-box',
 }
-
 
 const btnSecondary: React.CSSProperties = {
   padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 700,

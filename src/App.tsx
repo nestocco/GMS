@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
+import { useAppSettings } from './hooks/useAppSettings'
 import { PermissionsProvider } from './context/PermissionsContext'
 import Login               from './pages/Login'
 import DuenoDashboard      from './pages/dueno/DuenoDashboard'
@@ -18,6 +20,11 @@ function App() {
 
 function AuthRouter() {
   const { user, loading } = useAuth()
+  const { load: loadSettings } = useAppSettings()
+
+  useEffect(() => {
+    if (user) loadSettings()
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>

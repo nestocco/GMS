@@ -18,7 +18,7 @@ function calcDescuento(nivel: PlanNivel) { return NIVEL_BONUS[nivel] ?? 0 }
 function calcAge(birth_date: string): number | null {
   if (!birth_date) return null
   const today = new Date()
-  const dob   = new Date(birth_date)
+  const dob = new Date(birth_date)
   let age = today.getFullYear() - dob.getFullYear()
   const m = today.getMonth() - dob.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--
@@ -53,16 +53,16 @@ interface FaseMembresia {
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STEPS_CREATE = [
-  { label: 'Cuenta',    icon: User       },
-  { label: 'Perfil',    icon: User       },
-  { label: 'Salud',     icon: Heart      },
+  { label: 'Cuenta', icon: User },
+  { label: 'Perfil', icon: User },
+  { label: 'Salud', icon: Heart },
   { label: 'Membresía', icon: CreditCard },
 ]
 
 const STEPS_EDIT_FULL = [
-  { label: 'Cuenta', icon: User  },
-  { label: 'Perfil', icon: User  },
-  { label: 'Salud',  icon: Heart },
+  { label: 'Cuenta', icon: User },
+  { label: 'Perfil', icon: User },
+  { label: 'Salud', icon: Heart },
 ]
 
 const STEPS_EDIT_BASIC = [
@@ -90,44 +90,54 @@ const RELACION_LABELS: Record<string, string> = {
 
 function errorToStep(msg: string, isEdit: boolean): number {
   if (!isEdit && /email|cuenta|password/i.test(msg)) return 0
-  if (/dni|perfil/i.test(msg))            return isEdit ? 1 : 1
-  if (/terms|salud/i.test(msg))           return isEdit ? 2 : 2
-  if (/membresía|pago|sede/i.test(msg))   return 3
+  if (/dni|perfil/i.test(msg)) return isEdit ? 1 : 1
+  if (/terms|salud/i.test(msg)) return isEdit ? 2 : 2
+  if (/membresía|pago|sede/i.test(msg)) return 3
   return isEdit ? 1 : 3
 }
 
 function friendlyError(msg: string): string {
   if (/badly.?formatted|invalid.?email|email.*format|formato/i.test(msg)) return 'Formato de email inválido'
   if (/already.?registered|already.?exists|email.*use|duplicate.*email/i.test(msg)) return 'El email ya está registrado'
-  if (/rate.?limit|too.?many/i.test(msg))  return 'Demasiados intentos. Esperá unos minutos.'
-  if (/password/i.test(msg))               return 'La contraseña no cumple los requisitos mínimos'
+  if (/rate.?limit|too.?many/i.test(msg)) return 'Demasiados intentos. Esperá unos minutos.'
+  if (/password/i.test(msg)) return 'La contraseña no cumple los requisitos mínimos'
   if (/dni.*registrado|duplicate.*dni/i.test(msg)) return 'El DNI ya está registrado'
-  if (/sin permiso/i.test(msg))            return 'Sin permisos para realizar esta acción'
+  if (/sin permiso/i.test(msg)) return 'Sin permisos para realizar esta acción'
   return msg
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
+export interface LeadPrefill {
+  nombre?: string
+  email?: string
+  telefono?: string
+  lead_id?: string
+}
+
 interface Props {
-  onClose:    () => void
-  onCreated:  () => void
+  onClose: () => void
+  onCreated: () => void
+  onCreatedWithId?: (userId: string) => void
   // Edit mode
-  mode?:      'create' | 'edit'
-  socioId?:   string
-  socioEmail?:string
-  userRole?:  UserRole
+  mode?: 'create' | 'edit'
+  socioId?: string
+  socioEmail?: string
+  userRole?: UserRole
+  leadData?: LeadPrefill
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', socioId, socioEmail, userRole }: Props) {
-  const isEdit      = mode === 'edit'
+export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, mode = 'create', socioId, socioEmail, userRole, leadData }: Props) {
+  const isEdit = mode === 'edit'
   const canEditHealth = !userRole || CAN_EDIT_HEALTH.includes(userRole)
   const STEPS = isEdit
     ? (canEditHealth ? STEPS_EDIT_FULL : STEPS_EDIT_BASIC)
     : STEPS_CREATE
 
-  const [step, setStep]              = useState(0)
+  const [step, setStep] = useState(0)
   const [maxStepReached, setMaxStep] = useState(isEdit ? STEPS.length - 1 : 0)
-  const [done, setDone]              = useState(false)
+  const [done, setDone] = useState(false)
+  const [createdUserId, setCreatedUserId] = useState<string | null>(null)
 
   function goTo(i: number) {
     setStep(i)
@@ -139,16 +149,20 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
   const { profile, loading: profileLoading, saving, error: updateError, updateSocio, resetError: resetUpdateError } = useEditarSocio(isEdit ? socioId : undefined)
 
   const submitting = isEdit ? saving : creating
-  const apiError   = isEdit ? updateError : createError
-  function resetError() { isEdit ? resetUpdateError() : resetCreateError() }
+  const apiError = isEdit ? updateError : createError
+  function resetError() { if (isEdit) { resetUpdateError() } else { resetCreateError() } }
 
-  const { planes }                          = usePlanes()
+  const { planes } = usePlanes()
   const { sucursales, loading: sucLoading } = useSucursales()
-  const { settings }                        = useGymSettings()
+  const { settings } = useGymSettings()
 
-  const [cuenta, setCuenta] = useState<FaseCuenta>({ email: '', password: '' })
+  const leadNameParts = leadData?.nombre?.trim().split(/\s+/) ?? []
+  const [cuenta, setCuenta] = useState<FaseCuenta>({
+    email: leadData?.email ?? '', password: '',
+  })
   const [perfil, setPerfil] = useState<FasePerfil>({
-    first_name: '', last_name: '', dni: '', birth_date: '', phone: '', origin_channel: '',
+    first_name: leadNameParts[0] ?? '', last_name: leadNameParts.slice(1).join(' '),
+    dni: '', birth_date: '', phone: leadData?.telefono ?? '', origin_channel: '',
     guardian_user_id: '', guardian_user_name: '',
     guardian_name: '', guardian_dni: '', guardian_phone: '', guardian_relationship: '',
     guardian_mode: '',
@@ -163,74 +177,75 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
   // Prefill en modo edición cuando llega el perfil
   useEffect(() => {
     if (!profile) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPerfil({
-      first_name:            profile.first_name  ?? '',
-      last_name:             profile.last_name   ?? '',
-      dni:                   profile.dni         ?? '',
-      birth_date:            profile.birth_date  ?? '',
-      phone:                 profile.phone       ?? '',
-      origin_channel:        profile.origin_channel ?? '',
-      guardian_user_id:      profile.guardian_user_id   ?? '',
-      guardian_user_name:    profile.guardian_user_name ?? '',
-      guardian_name:         profile.guardian_name         ?? '',
-      guardian_dni:          profile.guardian_dni          ?? '',
-      guardian_phone:        profile.guardian_phone        ?? '',
+      first_name: profile.first_name ?? '',
+      last_name: profile.last_name ?? '',
+      dni: profile.dni ?? '',
+      birth_date: profile.birth_date ?? '',
+      phone: profile.phone ?? '',
+      origin_channel: profile.origin_channel ?? '',
+      guardian_user_id: profile.guardian_user_id ?? '',
+      guardian_user_name: profile.guardian_user_name ?? '',
+      guardian_name: profile.guardian_name ?? '',
+      guardian_dni: profile.guardian_dni ?? '',
+      guardian_phone: profile.guardian_phone ?? '',
       guardian_relationship: profile.guardian_relationship ?? '',
       guardian_mode: profile.guardian_user_id
         ? 'socio'
         : (profile.guardian_name ? 'externo' : ''),
     })
     setSalud({
-      emergency_name:  profile.emergency_name  ?? '',
+      emergency_name: profile.emergency_name ?? '',
       emergency_phone: profile.emergency_phone ?? '',
-      medical_notes:   profile.medical_notes   ?? '',
-      terms_accepted:  true,  // ya aceptados al crear
+      medical_notes: profile.medical_notes ?? '',
+      terms_accepted: true,  // ya aceptados al crear
     })
   }, [profile])
 
-  const age     = calcAge(perfil.birth_date)
+  const age = calcAge(perfil.birth_date)
   const isMinor = age !== null && age < 18
   const guardianRequired = isMinor && settings.requireGuardianForMinors
 
   const guardianOk = !guardianRequired || (() => {
-    if (perfil.guardian_mode === 'socio')   return perfil.guardian_user_id !== '' && perfil.guardian_relationship !== ''
+    if (perfil.guardian_mode === 'socio') return perfil.guardian_user_id !== '' && perfil.guardian_relationship !== ''
     if (perfil.guardian_mode === 'externo') return perfil.guardian_name.trim() !== '' && perfil.guardian_phone.trim() !== '' && perfil.guardian_relationship !== ''
     return false
   })()
 
   const canNext = isEdit
     ? [
-        true,   // Cuenta: read-only, siempre válido
-        perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
-        ...(canEditHealth ? [true] : []),  // Salud: solo si tiene acceso
-      ]
+      true,   // Cuenta: read-only, siempre válido
+      perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
+      ...(canEditHealth ? [true] : []),  // Salud: solo si tiene acceso
+    ]
     : [
-        cuenta.email.includes('@') && cuenta.password.length >= 6,
-        perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
-        salud.terms_accepted,
-        !sucLoading && membresia.branch_id !== '' && membresia.plan_id !== '',
-      ]
+      cuenta.email.includes('@') && cuenta.password.length >= 6,
+      perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
+      salud.terms_accepted,
+      !sucLoading && membresia.branch_id !== '' && membresia.plan_id !== '',
+    ]
 
   async function handleSubmit() {
     // ── Modo edición ──────────────────────────────────────────────────────────
     if (isEdit && socioId) {
       const ok = await updateSocio(socioId, {
-        first_name:      perfil.first_name,
-        last_name:       perfil.last_name,
-        dni:             perfil.dni       || null,
-        birth_date:      perfil.birth_date || null,
-        phone:           perfil.phone     || null,
-        origin_channel:  perfil.origin_channel || null,
+        first_name: perfil.first_name,
+        last_name: perfil.last_name,
+        dni: perfil.dni || null,
+        birth_date: perfil.birth_date || null,
+        phone: perfil.phone || null,
+        origin_channel: perfil.origin_channel || null,
         ...(canEditHealth && {
-          emergency_name:  salud.emergency_name  || null,
+          emergency_name: salud.emergency_name || null,
           emergency_phone: salud.emergency_phone || null,
-          medical_notes:   salud.medical_notes   || null,
+          medical_notes: salud.medical_notes || null,
         }),
-        guardian_user_id:      perfil.guardian_mode === 'socio'   ? perfil.guardian_user_id   || null : null,
-        guardian_name:         perfil.guardian_mode === 'externo' ? perfil.guardian_name       || null : null,
-        guardian_dni:          perfil.guardian_mode === 'externo' ? perfil.guardian_dni        || null : null,
-        guardian_phone:        perfil.guardian_mode === 'externo' ? perfil.guardian_phone      || null : null,
-        guardian_relationship: guardianRequired                    ? perfil.guardian_relationship || null : null,
+        guardian_user_id: perfil.guardian_mode === 'socio' ? perfil.guardian_user_id || null : null,
+        guardian_name: perfil.guardian_mode === 'externo' ? perfil.guardian_name || null : null,
+        guardian_dni: perfil.guardian_mode === 'externo' ? perfil.guardian_dni || null : null,
+        guardian_phone: perfil.guardian_mode === 'externo' ? perfil.guardian_phone || null : null,
+        guardian_relationship: guardianRequired ? perfil.guardian_relationship || null : null,
       })
       if (ok) setDone(true)
       return
@@ -238,10 +253,11 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
 
     // ── Modo creación ─────────────────────────────────────────────────────────
     if (!membresia.branch_id) { setStep(3); return }
-    if (!membresia.plan_id)   { setStep(3); return }
-    const descuento  = calcDescuento(membresia.plan_nivel)
+    if (!membresia.plan_id) { setStep(3); return }
+    const descuento = calcDescuento(membresia.plan_nivel)
     const finalPrice = Math.round(membresia.plan_precio * (1 - descuento))
-    const ok = await crearSocio({
+    const userId = await crearSocio({
+      lead_id: leadData?.lead_id,
       email: cuenta.email, password: cuenta.password,
       first_name: perfil.first_name, last_name: perfil.last_name,
       dni: perfil.dni || undefined, birth_date: perfil.birth_date || undefined,
@@ -250,22 +266,26 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
       emergency_phone: salud.emergency_phone || undefined,
       medical_notes: salud.medical_notes || undefined,
       terms_accepted_at: salud.terms_accepted ? new Date().toISOString() : undefined,
-      guardian_user_id:      perfil.guardian_mode === 'socio'   ? perfil.guardian_user_id   : undefined,
-      guardian_name:         perfil.guardian_mode === 'externo' ? perfil.guardian_name       : undefined,
-      guardian_dni:          perfil.guardian_mode === 'externo' ? perfil.guardian_dni        : undefined,
-      guardian_phone:        perfil.guardian_mode === 'externo' ? perfil.guardian_phone      : undefined,
-      guardian_relationship: guardianRequired                   ? perfil.guardian_relationship : undefined,
+      guardian_user_id: perfil.guardian_mode === 'socio' ? perfil.guardian_user_id : undefined,
+      guardian_name: perfil.guardian_mode === 'externo' ? perfil.guardian_name : undefined,
+      guardian_dni: perfil.guardian_mode === 'externo' ? perfil.guardian_dni : undefined,
+      guardian_phone: perfil.guardian_mode === 'externo' ? perfil.guardian_phone : undefined,
+      guardian_relationship: guardianRequired ? perfil.guardian_relationship : undefined,
       branch_id: membresia.branch_id, plan_id: membresia.plan_id,
       plan_duration_days: membresia.plan_duracion,
       base_price: membresia.plan_precio, final_price: finalPrice,
       metodo_pago: membresia.metodo_pago, payment_type: membresia.payment_type,
     })
-    if (ok) setDone(true)
+    if (userId) {
+      setCreatedUserId(userId)
+      setDone(true)
+    }
   }
 
   useEffect(() => {
     if (!apiError) return
     const target = errorToStep(apiError, isEdit)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (target !== step) setStep(target)
   }, [apiError]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -295,7 +315,11 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
         </p>
         <button
           data-testid="wizard-btn-success-close"
-          onClick={() => { onCreated(); onClose() }}
+          onClick={() => {
+            onCreated()
+            if (!isEdit && createdUserId && onCreatedWithId) onCreatedWithId(createdUserId)
+            onClose()
+          }}
           style={{ marginTop: 8, padding: '10px 28px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'var(--green)', color: '#000', fontWeight: 700, fontSize: 13 }}
         >
           Cerrar
@@ -319,8 +343,8 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
       {/* Stepper */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px 24px', borderBottom: '1px solid var(--border2)', flexShrink: 0 }}>
         {STEPS.map((s, i) => {
-          const active    = i === step
-          const visited   = i <= maxStepReached && !active
+          const active = i === step
+          const visited = i <= maxStepReached && !active
           const clickable = visited && canNext[i - 1] !== false
           return (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center' }}>
@@ -431,7 +455,7 @@ export default function NuevoSocioWizard({ onClose, onCreated, mode = 'create', 
         </button>
 
         {(() => {
-          const lastStep  = STEPS.length - 1
+          const lastStep = STEPS.length - 1
           const canDirectSubmit = step < lastStep && maxStepReached === lastStep && canNext.every(Boolean)
 
           if (canDirectSubmit) return (
@@ -524,15 +548,6 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
-// ─── ReadOnlyField ────────────────────────────────────────────────────────────
-function ReadOnlyField({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontSize: 11, color: 'var(--muted)' }}>{label}</span>
-      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)' }}>{value || '—'}</span>
-    </div>
-  )
-}
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
@@ -552,9 +567,9 @@ function StyledSelect({ value, onChange, options, placeholder }: {
   value: string; onChange: (v: string) => void
   options: { value: string; label: string }[]; placeholder?: string
 }) {
-  const [open, setOpen]   = useState(false)
-  const containerRef      = useRef<HTMLDivElement>(null)
-  const selectedLabel     = options.find(o => o.value === value)?.label
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const selectedLabel = options.find(o => o.value === value)?.label
 
   useEffect(() => {
     function h(e: MouseEvent) {
@@ -608,14 +623,14 @@ function SocioSearchInput({ value, displayName, onSelect }: {
   value: string; displayName: string
   onSelect: (userId: string, name: string) => void
 }) {
-  const [query, setQuery]         = useState(displayName)
-  const [results, setResults]     = useState<SocioResult[]>([])
-  const [open, setOpen]           = useState(false)
+  const [query, setQuery] = useState(displayName)
+  const [results, setResults] = useState<SocioResult[]>([])
+  const [open, setOpen] = useState(false)
   const [searching, setSearching] = useState(false)
-  const debounceRef               = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const containerRef              = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { if (!value) setQuery('') }, [value])
+  useEffect(() => { if (!value) setQuery('') }, [value]) // eslint-disable-line react-hooks/set-state-in-effect
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -637,10 +652,11 @@ function SocioSearchInput({ value, displayName, onSelect }: {
         .select('user_id, first_name, last_name, dni')
         .or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,dni.ilike.%${term}%`)
         .limit(6)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mapped: SocioResult[] = (data ?? []).map((r: any) => ({
-        user_id:   r.user_id,
+        user_id: r.user_id,
         full_name: `${r.first_name} ${r.last_name}`.trim(),
-        dni:       r.dni ?? null,
+        dni: r.dni ?? null,
       }))
       setResults(mapped)
       setOpen(mapped.length > 0)
@@ -699,24 +715,25 @@ function SocioSearchInput({ value, displayName, onSelect }: {
 }
 
 // ─── DatePicker ───────────────────────────────────────────────────────────────
-const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const DOW_ES    = ['L','M','M','J','V','S','D']
+const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const DOW_ES = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 
 function DatePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const today    = new Date()
+  const today = new Date()
   const selected = value ? new Date(value + 'T12:00:00') : null
 
-  const [open, setOpen]           = useState(false)
-  const [navYear, setNavYear]     = useState(selected?.getFullYear() ?? today.getFullYear())
-  const [navMonth, setNavMonth]   = useState(selected?.getMonth() ?? today.getMonth())
-  const [yearMode, setYearMode]   = useState(false)
+  const [open, setOpen] = useState(false)
+  const [navYear, setNavYear] = useState(selected?.getFullYear() ?? today.getFullYear())
+  const [navMonth, setNavMonth] = useState(selected?.getMonth() ?? today.getMonth())
+  const [yearMode, setYearMode] = useState(false)
   const [monthMode, setMonthMode] = useState(false)
-  const containerRef              = useRef<HTMLDivElement>(null)
-  const yearGridRef               = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const yearGridRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (value) {
       const d = new Date(value + 'T12:00:00')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNavYear(d.getFullYear())
       setNavMonth(d.getMonth())
     }
@@ -750,16 +767,16 @@ function DatePicker({ value, onChange }: { value: string; onChange: (v: string) 
 
   function selectDay(date: Date) {
     const yyyy = date.getFullYear()
-    const mm   = String(date.getMonth() + 1).padStart(2, '0')
-    const dd   = String(date.getDate()).padStart(2, '0')
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
     onChange(`${yyyy}-${mm}-${dd}`)
     setOpen(false); setYearMode(false); setMonthMode(false)
   }
 
   function getCalendarDays() {
     const firstDay = new Date(navYear, navMonth, 1)
-    const lastDay  = new Date(navYear, navMonth + 1, 0)
-    let startDow   = firstDay.getDay()
+    const lastDay = new Date(navYear, navMonth + 1, 0)
+    let startDow = firstDay.getDay()
     startDow = startDow === 0 ? 6 : startDow - 1
 
     const days: { date: Date; current: boolean }[] = []
@@ -773,16 +790,16 @@ function DatePicker({ value, onChange }: { value: string; onChange: (v: string) 
     return days
   }
 
-  const isToday    = (d: Date) => d.toDateString() === today.toDateString()
+  const isToday = (d: Date) => d.toDateString() === today.toDateString()
   const isSelected = (d: Date) => !!selected && d.toDateString() === selected.toDateString()
 
   const displayText = selected
-    ? `${String(selected.getDate()).padStart(2,'0')}/${String(selected.getMonth()+1).padStart(2,'0')}/${selected.getFullYear()}`
+    ? `${String(selected.getDate()).padStart(2, '0')}/${String(selected.getMonth() + 1).padStart(2, '0')}/${selected.getFullYear()}`
     : 'DD/MM/AAAA'
 
   const yearFrom = today.getFullYear() - 100
-  const yearTo   = today.getFullYear() + 10
-  const years    = Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i)
+  const yearTo = today.getFullYear() + 10
+  const years = Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i)
 
   return (
     <div ref={containerRef} style={{ position: 'relative' }}>
@@ -823,7 +840,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (v: string) 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
               {MONTHS_ES.map((m, i) => {
                 const isCurrent = i === navMonth
-                const isNow     = i === today.getMonth() && navYear === today.getFullYear()
+                const isNow = i === today.getMonth() && navYear === today.getFullYear()
                 return (
                   <div key={i} onClick={() => setNavMonth(i)}
                     style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 7, fontSize: 11, cursor: 'pointer', fontWeight: isCurrent ? 800 : 400, background: isCurrent ? 'var(--green)' : isNow ? 'rgba(74,222,128,0.1)' : 'transparent', color: isCurrent ? '#000' : isNow ? 'var(--green)' : 'var(--text)', border: isNow && !isCurrent ? '1px solid rgba(74,222,128,0.35)' : '1px solid transparent' }}
@@ -839,7 +856,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (v: string) 
             <div ref={yearGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, maxHeight: 200, overflowY: 'auto', paddingRight: 2 }}>
               {years.map(y => {
                 const isCurrent = y === navYear
-                const isNow_    = y === today.getFullYear()
+                const isNow_ = y === today.getFullYear()
                 return (
                   <div key={y} data-current={isCurrent ? 'true' : 'false'}
                     onClick={() => { setNavYear(y); setYearMode(false) }}
@@ -955,7 +972,7 @@ function StepCuenta({ data, onChange, editMode, socioEmail }: {
 }
 
 // ─── Paso 2 — Perfil ──────────────────────────────────────────────────────────
-function StepPerfil({ data, onChange, isMinor, age, guardianRequired, editMode, userRole }: {
+function StepPerfil({ data, onChange, isMinor, age, guardianRequired, editMode }: {
   data: FasePerfil
   onChange: (d: FasePerfil) => void
   isMinor: boolean
@@ -1044,15 +1061,15 @@ function StepPerfil({ data, onChange, isMinor, age, guardianRequired, editMode, 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <Field label="Nombre completo" required>
-                  <input value={data.guardian_name} style={inputStyle} placeholder="Ana López" onChange={e => onChange({ ...data, guardian_name: e.target.value })} />
+                  <input value={data.guardian_name} style={inputStyle} placeholder="" onChange={e => onChange({ ...data, guardian_name: e.target.value })} />
                 </Field>
                 <Field label="DNI">
-                  <input value={data.guardian_dni} style={inputStyle} placeholder="20123456" onChange={e => onChange({ ...data, guardian_dni: e.target.value })} />
+                  <input value={data.guardian_dni} style={inputStyle} placeholder="" onChange={e => onChange({ ...data, guardian_dni: e.target.value })} />
                 </Field>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <Field label="Teléfono" required>
-                  <input value={data.guardian_phone} style={inputStyle} placeholder="+54 9 11 …" onChange={e => onChange({ ...data, guardian_phone: e.target.value })} />
+                  <input value={data.guardian_phone} style={inputStyle} placeholder="" onChange={e => onChange({ ...data, guardian_phone: e.target.value })} />
                 </Field>
                 <Field label="Vínculo" required>
                   <StyledSelect value={data.guardian_relationship} onChange={v => onChange({ ...data, guardian_relationship: v })} placeholder="Seleccionar…" options={RELACIONES.map(r => ({ value: r, label: RELACION_LABELS[r] }))} />
@@ -1124,7 +1141,7 @@ function StepSalud({ data, onChange, isMinor, guardianDisplayName }: {
             data-testid="wizard-input-emergency-phone"
             value={data.emergency_phone}
             style={inputStyle}
-            placeholder="+54 9 11 …"
+            placeholder=""
             onChange={e => onChange({ ...data, emergency_phone: e.target.value })}
           />
         </Field>
@@ -1168,12 +1185,13 @@ function StepSalud({ data, onChange, isMinor, guardianDisplayName }: {
 
 // ─── Paso 4 — Membresía ───────────────────────────────────────────────────────
 function StepMembresia({ data, onChange, planes, sucursales, sucursalesLoading }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: FaseMembresia; onChange: (d: FaseMembresia) => void; planes: any[]; sucursales: any[]; sucursalesLoading: boolean
 }) {
-  const planesActivos  = planes.filter(p => p.activo)
-  const sedesActivas   = sucursales.filter((s: any) => s.is_active)
-  const descuento      = calcDescuento(data.plan_nivel)
-  const precioFinal    = data.plan_precio ? Math.round(data.plan_precio * (1 - descuento)) : 0
+  const planesActivos = planes.filter(p => p.activo)
+  const sedesActivas = sucursales.filter(s => s.is_active)
+  const descuento = calcDescuento(data.plan_nivel)
+  const precioFinal = data.plan_precio ? Math.round(data.plan_precio * (1 - descuento)) : 0
 
   function selectPlan(planId: string) {
     const plan = planesActivos.find(p => p.id === planId)
@@ -1196,7 +1214,7 @@ function StepMembresia({ data, onChange, planes, sucursales, sucursalesLoading }
         ) : (
           <StyledSelect value={data.branch_id} onChange={v => onChange({ ...data, branch_id: v })}
             placeholder="Seleccionar sede…"
-            options={sedesActivas.map((s: any) => ({ value: s.id, label: s.nombre }))} />
+            options={sedesActivas.map(s => ({ value: s.id, label: s.nombre }))} />
         )}
       </Field>
 

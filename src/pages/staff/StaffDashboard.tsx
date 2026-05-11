@@ -5,8 +5,9 @@ import Sidebar from '../../components/shared/Sidebar'
 import Topbar  from '../../components/shared/Topbar'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
 
-import Cobros  from '../cobros/Cobros'
-import Socios  from '../socios/Socios'
+import Cobros      from '../cobros/Cobros'
+import Socios      from '../socios/Socios'
+import Prospectos  from '../prospectos/Prospectos'
 
 interface Props { user: AuthUser }
 
@@ -123,6 +124,8 @@ export default function StaffDashboard({ user }: Props) {
       return <StaffHome user={user} />
     if (path.startsWith('/dashboard/socios'))
       return <Socios user={user} />
+    if (path.startsWith('/dashboard/prospectos'))
+      return <Prospectos user={user} />
     if (path.startsWith('/dashboard/cobros'))
       return <Cobros user={user} />
     if (path.startsWith('/dashboard/alta-socio'))

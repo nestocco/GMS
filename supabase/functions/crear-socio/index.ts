@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
     // ── Payload ──────────────────────────────────────────────────────────────
     const body = await req.json()
     const {
+      // Vínculo con prospecto (opcional)
+      lead_id,
       // Fase 1 — Cuenta
       email, password,
       // Fase 2 — Perfil
@@ -151,6 +153,73 @@ Deno.serve(async (req) => {
     // Activar usuario si pago completo
     if (payment_type !== 'CUOTA_1') {
       await admin.from('users').update({ is_active: true }).eq('id', userId)
+    }
+
+    // ── Auto-vincular prospecto ───────────────────────────────────────────────
+    // Camino 1: lead_id explícito (flujo "Hacer socio")
+    // Camino 2: coincidencia de email o teléfono (socio creado sin saber del prospecto)
+    let linkedLeadId: string | null = null
+
+    if (lead_id) {
+      const { data: specLead } = await admin
+        .from('leads')
+        .select('id, estado')
+        .eq('id', lead_id)
+        .is('promoted_to', null)
+        .maybeSingle()
+
+      if (specLead) linkedLeadId = specLead.id
+    }
+
+    if (!linkedLeadId) {
+      // Fallback: buscar por email (prioridad) y luego por teléfono
+      let matchLead: { id: string; estado: string } | null = null
+
+      if (email) {
+        const { data } = await admin
+          .from('leads')
+          .select('id, estado')
+          .eq('email', email)
+          .is('promoted_to', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (data) matchLead = data
+      }
+
+      if (!matchLead && phone) {
+        const { data } = await admin
+          .from('leads')
+          .select('id, estado')
+          .eq('telefono', phone)
+          .is('promoted_to', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (data) matchLead = data
+      }
+
+      if (matchLead) linkedLeadId = matchLead.id
+    }
+
+    if (linkedLeadId) {
+      const { data: leadToLink } = await admin
+        .from('leads')
+        .select('estado')
+        .eq('id', linkedLeadId)
+        .single()
+
+      await admin.from('leads')
+        .update({ estado: 'ADHERIDO', promoted_to: userId })
+        .eq('id', linkedLeadId)
+
+      await admin.from('lead_state_log').insert({
+        lead_id:     linkedLeadId,
+        estado_from: leadToLink?.estado ?? null,
+        estado_to:   'ADHERIDO',
+        comentario:  'Vinculado automáticamente al registrar el socio',
+        changed_by:  caller.id,
+      })
     }
 
     return new Response(

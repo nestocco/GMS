@@ -6,10 +6,11 @@ import Topbar  from '../../components/shared/Topbar'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
 
 // Reutilizamos páginas del Dueño donde aplica
-import Socios     from '../socios/Socios'
-import Cobros     from '../cobros/Cobros'
-import Alertas    from '../alertas/Alertas'
-import RolesStaff from '../dueno/roles/RolesStaff'
+import Socios      from '../socios/Socios'
+import Cobros      from '../cobros/Cobros'
+import Alertas     from '../alertas/Alertas'
+import RolesStaff  from '../dueno/roles/RolesStaff'
+import Prospectos  from '../prospectos/Prospectos'
 
 interface Props { user: AuthUser }
 
@@ -133,6 +134,8 @@ export default function EncargadoDashboard({ user }: Props) {
       return <EncargadoHome user={user} />
     if (path.startsWith('/dashboard/socios'))
       return <Socios user={user} />
+    if (path.startsWith('/dashboard/prospectos'))
+      return <Prospectos user={user} />
     if (path.startsWith('/dashboard/cobros'))
       return <Cobros user={user} />
     if (path.startsWith('/dashboard/alertas'))

@@ -14,20 +14,20 @@ interface Props {
 }
 
 export default function EditarPersonalModal({ staff, callerRole, onClose, onUpdated }: Props) {
-  const nameParts    = staff.nombre.split(' ')
+  const nameParts = staff.nombre.split(' ')
   const defaultFirst = nameParts[0] ?? ''
-  const defaultLast  = nameParts.slice(1).join(' ') ?? ''
+  const defaultLast = nameParts.slice(1).join(' ') ?? ''
 
   const [firstName, setFirstName] = useState(defaultFirst)
-  const [lastName, setLastName]   = useState(defaultLast)
-  const [phone, setPhone]         = useState(staff.phone ?? '')
-  const [branchId, setBranchId]   = useState(staff.sedeId ?? '')
-  const [branches, setBranches]   = useState<Branch[]>([])
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState<string | null>(null)
+  const [lastName, setLastName] = useState(defaultLast)
+  const [phone, setPhone] = useState(staff.phone ?? '')
+  const [branchId, setBranchId] = useState(staff.sedeId ?? '')
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const canSubmit        = !loading && !!firstName && !!lastName
-  const canChangeBranch  = callerRole === 'R1_DUENO' || callerRole === 'R2_ENCARGADO'
+  const canSubmit = !loading && !!firstName && !!lastName
+  const canChangeBranch = callerRole === 'R1_DUENO' || callerRole === 'R2_ENCARGADO'
 
   useEffect(() => {
     supabase
@@ -50,11 +50,11 @@ export default function EditarPersonalModal({ staff, callerRole, onClose, onUpda
     }
 
     const body: Record<string, unknown> = {
-      action:     'update',
-      staff_id:   staff.id,
+      action: 'update',
+      staff_id: staff.id,
       first_name: firstName.trim(),
-      last_name:  lastName.trim(),
-      phone:      phone.trim() || null,
+      last_name: lastName.trim(),
+      phone: phone.trim() || null,
     }
 
     if (branchId && branchId !== staff.sedeId) {
@@ -141,7 +141,7 @@ export default function EditarPersonalModal({ staff, callerRole, onClose, onUpda
                   data-testid="editar-personal-input-phone"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="+54 11 0000-0000"
+                  placeholder=""
                   style={inputStyle}
                 />
               </div>

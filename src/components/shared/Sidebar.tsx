@@ -3,7 +3,7 @@ import {
   ShoppingBag, Calendar, Activity, AlertTriangle,
   Home, Shield, Settings, Download, LogOut,
   UserPlus, UserX, ClipboardList, QrCode, Gift,
-  ScanLine, Wrench, Star
+  ScanLine, Wrench, Star, UserSearch
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
@@ -33,6 +33,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
         { icon: Users,           label: 'Socios',        path: '/dashboard/socios' },
         { icon: CreditCard,      label: 'Membresías',    path: '/dashboard/membresias' },
         { icon: DollarSign,      label: 'Cobros',        path: '/dashboard/cobros' },
+        { icon: UserSearch,      label: 'Prospectos',    path: '/dashboard/prospectos' },
       ],
     },
     {
@@ -57,9 +58,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     {
       label: 'Principal',
       items: [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-        { icon: Users,           label: 'Socios',    path: '/dashboard/socios' },
-        { icon: DollarSign,      label: 'Cobros',    path: '/dashboard/cobros' },
+        { icon: LayoutDashboard, label: 'Dashboard',   path: '/dashboard' },
+        { icon: Users,           label: 'Socios',      path: '/dashboard/socios' },
+        { icon: DollarSign,      label: 'Cobros',      path: '/dashboard/cobros' },
+        { icon: UserSearch,      label: 'Prospectos',  path: '/dashboard/prospectos' },
       ],
     },
     {
@@ -85,6 +87,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
         { icon: LayoutDashboard, label: 'Dashboard',    path: '/dashboard' },
         { icon: Users,           label: 'Socios',       path: '/dashboard/socios' },
         { icon: UserPlus,        label: 'Alta de Socio', path: '/dashboard/alta-socio' },
+        { icon: UserSearch,      label: 'Prospectos',   path: '/dashboard/prospectos' },
         { icon: DollarSign,      label: 'Caja',         path: '/dashboard/cobros' },
       ],
     },

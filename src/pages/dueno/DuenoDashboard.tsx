@@ -12,7 +12,7 @@
 // los estilos críticos directamente para garantizar el funcionamiento.
 
 import { useState, useEffect, useRef } from 'react'
-import GridLayout, { type Layout } from 'react-grid-layout'
+import GridLayout, { type LayoutItem, noCompactor } from 'react-grid-layout'
 import type { AuthUser } from '../../types'
 import Sidebar from '../../components/shared/Sidebar'
 import Topbar from '../../components/shared/Topbar'
@@ -26,7 +26,6 @@ import EdgeMonitor from '../../components/widgets/EdgeMonitor'
 
 import {
   WIDGET_CATALOG,
-  DEFAULT_LAYOUTS,
   widgetsForRole,
   type WidgetType,
   type UserRole,
@@ -42,6 +41,8 @@ import Alertas from '../alertas/Alertas'
 import RolesStaff from './roles/RolesStaff'
 import Sucursales from './sucursales/Sucursales'
 import Configuracion from './configuracion/Configuracion'
+import AlgoritmoDescuento from './configuracion/AlgoritmoDescuento'
+import Prospectos from '../prospectos/Prospectos'
 
 import { useLocation } from 'react-router-dom'
 
@@ -136,7 +137,7 @@ export default function DuenoDashboard({ user }: Props) {
   const { layout: savedLayout, widgets: savedWidgets, loading, save } =
     useDashboardLayout(user.id, role)
 
-  const [layout, setLayout] = useState<Layout[]>(savedLayout)
+  const [layout, setLayout] = useState<LayoutItem[]>(savedLayout)
   const [visibleIds, setVisible] = useState<WidgetType[]>(savedWidgets.map(w => w.type))
   const [editMode, setEditMode] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
@@ -166,10 +167,11 @@ export default function DuenoDashboard({ user }: Props) {
   // ── Sync desde Supabase ──
   useEffect(() => {
     if (!loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLayout(savedLayout)
       setVisible(savedWidgets.map(w => w.type))
     }
-  }, [loading])
+  }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Ancho del contenedor ──
   // Depende de isHome: cuando el div del grid remonta al volver al dashboard,
@@ -240,7 +242,7 @@ export default function DuenoDashboard({ user }: Props) {
   }
 
   // ── Layout activo: static=true fuera de edit mode (bloquea drag y resize) ──
-  const activeLayout: Layout[] = layout
+  const activeLayout: LayoutItem[] = layout
     .filter(l => visibleIds.includes(l.i as WidgetType))
     .map(l => {
       const def = WIDGET_CATALOG.find(w => w.type === l.i)
@@ -256,6 +258,7 @@ export default function DuenoDashboard({ user }: Props) {
   // ─── Routing ───────────────────────────────────────────────────────────────
   const renderSection = () => {
     if (path.startsWith('/dashboard/socios')) return <Socios user={user} />
+    if (path.startsWith('/dashboard/prospectos')) return <Prospectos user={user} />
     if (path.startsWith('/dashboard/membresias')) return <Membresias user={user} />
     if (path.startsWith('/dashboard/cobros')) return <Cobros user={user} />
     if (path.startsWith('/dashboard/alertas')) return <Alertas user={user} />
@@ -269,6 +272,7 @@ export default function DuenoDashboard({ user }: Props) {
         </ClaimGuard>
       )
     if (path.startsWith('/dashboard/sucursales')) return <Sucursales user={user} />
+    if (path.startsWith('/dashboard/configuracion/algoritmo')) return <AlgoritmoDescuento user={user} />
     if (path.startsWith('/dashboard/configuracion')) return <Configuracion user={user} />
     if (path.startsWith('/dashboard/exportar'))
       return (
@@ -428,20 +432,13 @@ export default function DuenoDashboard({ user }: Props) {
                 {containerW > 0 && (
                   <GridLayout
                     layout={activeLayout}
-                    cols={COLS}
-                    rowHeight={ROW_H}
                     width={containerW - PADDING * 2}
-                    margin={[MARGIN, MARGIN]}
-                    containerPadding={[0, 0]}
-                    isDraggable={editMode}
-                    isResizable={editMode}
-                    compactType={null}
-                    preventCollision={true}
-                    useCSSTransforms={false}
-                    onDragStop={(l) => setLayout(l)}
-                    onResizeStop={(l) => setLayout(l)}
-                    draggableHandle=".widget-drag-handle"
-                    resizeHandles={['se']}
+                    gridConfig={{ cols: COLS, rowHeight: ROW_H, margin: [MARGIN, MARGIN], containerPadding: [0, 0] }}
+                    dragConfig={{ enabled: editMode, handle: '.widget-drag-handle' }}
+                    resizeConfig={{ enabled: editMode, handles: ['se'] }}
+                    compactor={{ ...noCompactor, preventCollision: true }}
+                    onDragStop={(l) => setLayout([...l])}
+                    onResizeStop={(l) => setLayout([...l])}
                     style={{ position: 'relative', zIndex: 1 }}
                   >
                     {visibleIds.map(type => {
@@ -566,7 +563,6 @@ export default function DuenoDashboard({ user }: Props) {
                         Todoss los widgets están activos
                       </p>
                     ) : catalogAvailable.map(w => {
-                      const def = WIDGET_CATALOG.find(d => d.type === w.type)!
                       return (
                         <div
                           key={w.type}

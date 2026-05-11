@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Layout } from 'react-grid-layout'
+import type { LayoutItem } from 'react-grid-layout'
 import { DEFAULT_LAYOUTS, type UserRole, type WidgetType } from '../components/widgets/widgetCatalog'
 
 export interface WidgetItem {
@@ -14,11 +14,11 @@ export interface WidgetItem {
 }
 
 interface DashboardLayoutState {
-  layout: Layout[]
+  layout: LayoutItem[]
   widgets: WidgetItem[]
   loading: boolean
   error: string | null
-  save: (layout: Layout[], widgets: WidgetItem[]) => Promise<void>
+  save: (layout: LayoutItem[], widgets: WidgetItem[]) => Promise<void>
 }
 
 export function useDashboardLayout(userId: string, role: UserRole): DashboardLayoutState {
@@ -28,7 +28,7 @@ export function useDashboardLayout(userId: string, role: UserRole): DashboardLay
     type: l.i as WidgetType,
     label: l.i, // el componente lo sobreescribe
   }))
-  const defaultLayout: Layout[] = defaultLayouts.map(l => ({
+  const defaultLayout: LayoutItem[] = defaultLayouts.map(l => ({
     i: l.i,
     x: l.x,
     y: l.y,
@@ -36,7 +36,7 @@ export function useDashboardLayout(userId: string, role: UserRole): DashboardLay
     h: l.h,
   }))
 
-  const [layout, setLayout]   = useState<Layout[]>(defaultLayout)
+  const [layout, setLayout]   = useState<LayoutItem[]>(defaultLayout)
   const [widgets, setWidgets] = useState<WidgetItem[]>(defaultWidgets)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
@@ -56,7 +56,7 @@ export function useDashboardLayout(userId: string, role: UserRole): DashboardLay
       if (err) throw err
 
       if (data) {
-        setLayout(data.layout as Layout[])
+        setLayout(data.layout as LayoutItem[])
         setWidgets(data.widgets as WidgetItem[])
       }
       // Si data es null → usa defaults (ya están en el estado inicial)
@@ -71,7 +71,7 @@ export function useDashboardLayout(userId: string, role: UserRole): DashboardLay
   // Llama a load() en el primer render desde el componente
   // (no usamos useEffect aquí para mantener el hook puro)
 
-  const save = useCallback(async (newLayout: Layout[], newWidgets: WidgetItem[]) => {
+  const save = useCallback(async (newLayout: LayoutItem[], newWidgets: WidgetItem[]) => {
     if (!userId) return
     const { error: err } = await supabase
       .from('dashboard_layouts')

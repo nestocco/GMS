@@ -28,6 +28,8 @@ export interface AltaSocioPayload {
   guardian_dni?: string
   guardian_phone?: string
   guardian_relationship?: string
+  // Vinculación con prospecto (opcional — si viene del flujo "Hacer socio")
+  lead_id?: string
   // Fase 4
   branch_id: string
   plan_id: string
@@ -42,7 +44,9 @@ export function useAltaSocio() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
-  async function crearSocio(payload: AltaSocioPayload): Promise<boolean> {
+  // Retorna el userId del socio creado, o null si falló.
+  // El valor es truthy en éxito y falsy en error, compatible con `if (ok)`.
+  async function crearSocio(payload: AltaSocioPayload): Promise<string | null> {
     setLoading(true)
     setError(null)
 
@@ -51,25 +55,25 @@ export function useAltaSocio() {
     })
 
     if (fnErr) {
-      // Extraer mensaje real del cuerpo de la respuesta
       let msg = fnErr.message
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const body = await (fnErr as any).context?.json()
         if (body?.error) msg = body.error
       } catch { /* ignorar */ }
       setError(msg)
       setLoading(false)
-      return false
+      return null
     }
 
     if (!data?.ok) {
       setError(data?.error ?? 'Error desconocido')
       setLoading(false)
-      return false
+      return null
     }
 
     setLoading(false)
-    return true
+    return data.user_id ?? null
   }
 
   function resetError() { setError(null) }

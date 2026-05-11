@@ -134,7 +134,7 @@ export interface Alerta {
   sede: string
   socio: string | null
   accionSugerida: string
-  evidence: Record<string, any> | null
+  evidence: Record<string, unknown> | null
   fecha: string
   creadoEn: string
 }
@@ -158,6 +158,25 @@ export interface StaffMember {
   ultimaActividad: string | null
 }
 
+// ─── Prospectos / Leads ───────────────────────────────────────────────────────
+export type LeadEstado = 'NUEVO' | 'CONTACTADO' | 'INTERESADO' | 'ADHERIDO' | 'DESCARTADO'
+
+export interface Lead {
+  id:             string
+  nombre:         string
+  telefono:       string | null
+  email:          string | null
+  estado:         LeadEstado
+  notas:          string | null
+  branch_id:      string | null
+  branch_nombre:  string | null
+  created_by:     string | null
+  creator_email:  string | null
+  promoted_to:    string | null
+  created_at:     string
+  updated_at:     string
+}
+
 // ─── Sucursales ───────────────────────────────────────────────────────────────
 export type EdgeStatus = 'ONLINE' | 'OFFLINE' | 'ADVERTENCIA' | 'SIN_DISPOSITIVO'
 
@@ -165,12 +184,22 @@ export interface Sucursal {
   id: string
   nombre: string
   direccion: string
-  telefono: string
-  horarioApertura: string
-  horarioCierre: string
-  edgeDeviceId: string | null
-  isActive: boolean
-  sociosActivos: number
-  staffTotal: number
-  edgeStatus: EdgeStatus
+  telefono: string | null
+  horario_apertura: string
+  horario_cierre: string
+  edge_device_id: string | null
+  is_active: boolean
+  socios_activos: number
+  staff_count: number
+  edge_estado: EdgeStatus
+  edge_ultima_sync: string | null
+}
+
+export type SucursalInput = {
+  nombre: string
+  direccion: string
+  horario_apertura: string
+  horario_cierre: string
+  telefono?: string
+  edge_device_id?: string
 }
