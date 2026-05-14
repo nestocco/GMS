@@ -1,3 +1,8 @@
+// helpers/supabase.ts
+// Cliente Supabase con service_role exclusivo para helpers de seed y cleanup en tests.
+// Exporta `adminClient` y funciones utilitarias (deleteUserByEmail, getSocioByDni,
+// deleteMembershipsByUserId). No debe usarse en Page Objects ni en specs directamente.
+
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import * as path from 'path'

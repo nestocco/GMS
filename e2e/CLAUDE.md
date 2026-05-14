@@ -23,12 +23,12 @@ Guía de referencia para automatización de pruebas en este proyecto. Leer compl
 
 ## Estructura del proyecto
 
+
 ```
 e2e/
 ├── CLAUDE.md                     # este archivo
 ├── playwright.config.ts          # configuración central
 ├── .env.e2e                      # credenciales de test (NO commitear)
-├── .env.e2e.example              # plantilla de variables (SÍ commitear)
 ├── fixtures/
 │   └── index.ts                  # fixtures globales con auth por rol pre-cargado
 ├── pages/                        # Page Objects — uno por módulo o sección relevante

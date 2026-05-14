@@ -1,3 +1,8 @@
+// helpers/auth.ts
+// Global setup de Playwright: hace login con cada rol definido en .env.e2e usando la UI
+// de la app y serializa la sesión resultante en e2e/.auth/<rol>.json. Playwright carga
+// ese storageState en los tests para evitar pasar por el login en cada spec.
+
 import { chromium, type FullConfig } from '@playwright/test'
 import * as dotenv from 'dotenv'
 import * as path from 'path'

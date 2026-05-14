@@ -1,3 +1,8 @@
+// fixtures/index.ts
+// Extiende el objeto `test` de Playwright con los Page Objects del proyecto (LoginPage,
+// SociosPage, NuevoSocioWizardPage). Todos los specs deben importar `test` y `expect`
+// desde este archivo en lugar de hacerlo directamente desde @playwright/test.
+
 import { test as base, expect } from '@playwright/test'
 import { LoginPage } from '../pages/LoginPage'
 import { SociosPage } from '../pages/SociosPage'
