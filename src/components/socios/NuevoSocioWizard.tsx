@@ -1,6 +1,7 @@
 // src/components/socios/NuevoSocioWizard.tsx
 import { useState, useEffect, useRef } from 'react'
-import { X, User, Heart, CreditCard, CheckCircle, Eye, EyeOff, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Search, CalendarDays, Lock } from 'lucide-react'
+import { X, User, Heart, CreditCard, CheckCircle, Eye, EyeOff, ChevronDown, AlertTriangle, Search, Lock, Camera } from 'lucide-react'
+import { DatePicker } from '../shared/DatePicker'
 import { useAltaSocio } from '../../hooks/useAltaSocio'
 import { useEditarSocio } from '../../hooks/useEditarSocio'
 import { usePlanes } from '../../hooks/usePlanes'
@@ -53,9 +54,10 @@ interface FaseMembresia {
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STEPS_CREATE = [
-  { label: 'Cuenta', icon: User },
-  { label: 'Perfil', icon: User },
-  { label: 'Salud', icon: Heart },
+  { label: 'Cuenta',    icon: User },
+  { label: 'Perfil',   icon: User },
+  { label: 'Foto',     icon: Camera },
+  { label: 'Salud',    icon: Heart },
   { label: 'Membresía', icon: CreditCard },
 ]
 
@@ -90,10 +92,10 @@ const RELACION_LABELS: Record<string, string> = {
 
 function errorToStep(msg: string, isEdit: boolean): number {
   if (!isEdit && /email|cuenta|password/i.test(msg)) return 0
-  if (/dni|perfil/i.test(msg)) return isEdit ? 1 : 1
-  if (/terms|salud/i.test(msg)) return isEdit ? 2 : 2
-  if (/membresía|pago|sede/i.test(msg)) return 3
-  return isEdit ? 1 : 3
+  if (/dni|perfil/i.test(msg)) return 1
+  if (/terms|salud/i.test(msg)) return isEdit ? 2 : 3
+  if (/membresía|pago|sede/i.test(msg)) return 4
+  return isEdit ? 1 : 4
 }
 
 function friendlyError(msg: string): string {
@@ -173,6 +175,7 @@ export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, 
   const [membresia, setMembresia] = useState<FaseMembresia>(
     { branch_id: '', plan_id: '', plan_nivel: 'BASICO', plan_precio: 0, plan_duracion: 30, metodo_pago: 'EFECTIVO', payment_type: 'PAGO_COMPLETO' }
   )
+  const [foto, setFoto] = useState<Blob | null>(null)
 
   // Prefill en modo edición cuando llega el perfil
   useEffect(() => {
@@ -213,17 +216,20 @@ export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, 
     return false
   })()
 
+  const emergencyOk = salud.emergency_name.trim() !== '' && salud.emergency_phone.trim() !== ''
+
   const canNext = isEdit
     ? [
       true,   // Cuenta: read-only, siempre válido
       perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
-      ...(canEditHealth ? [true] : []),  // Salud: solo si tiene acceso
+      ...(canEditHealth ? [emergencyOk] : []),
     ]
     : [
-      cuenta.email.includes('@') && cuenta.password.length >= 6,
-      perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk,
-      salud.terms_accepted,
-      !sucLoading && membresia.branch_id !== '' && membresia.plan_id !== '',
+      cuenta.email.includes('@') && cuenta.password.length >= 6,                             // 0 Cuenta
+      perfil.first_name.trim() !== '' && perfil.last_name.trim() !== '' && perfil.birth_date !== '' && guardianOk, // 1 Perfil
+      true,                                                                                   // 2 Foto (opcional)
+      salud.terms_accepted && emergencyOk,                                                    // 3 Salud
+      !sucLoading && membresia.branch_id !== '' && membresia.plan_id !== '',                 // 4 Membresía
     ]
 
   async function handleSubmit() {
@@ -277,6 +283,17 @@ export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, 
       metodo_pago: membresia.metodo_pago, payment_type: membresia.payment_type,
     })
     if (userId) {
+      if (foto) {
+        const path = `${userId}/profile.jpg`
+        const { error: uploadErr } = await supabase.storage
+          .from('member-photos')
+          .upload(path, foto, { contentType: 'image/jpeg', upsert: true })
+        if (!uploadErr) {
+          await supabase.functions.invoke('editar-socio', {
+            body: { action: 'update_photo', socio_id: userId, photo_url: path },
+          })
+        }
+      }
       setCreatedUserId(userId)
       setDone(true)
     }
@@ -419,7 +436,10 @@ export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, 
             userRole={userRole}
           />
         )}
-        {step === 2 && canEditHealth && (
+        {!isEdit && step === 2 && (
+          <StepFoto foto={foto} onCapture={setFoto} />
+        )}
+        {((!isEdit && step === 3) || (isEdit && step === 2 && canEditHealth)) && (
           <StepSalud
             data={salud}
             onChange={setSalud}
@@ -427,7 +447,7 @@ export default function NuevoSocioWizard({ onClose, onCreated, onCreatedWithId, 
             guardianDisplayName={perfil.guardian_mode === 'socio' ? perfil.guardian_user_name : perfil.guardian_name}
           />
         )}
-        {!isEdit && step === 3 && (
+        {!isEdit && step === 4 && (
           <StepMembresia
             data={membresia}
             onChange={setMembresia}
@@ -714,201 +734,6 @@ function SocioSearchInput({ value, displayName, onSelect }: {
   )
 }
 
-// ─── DatePicker ───────────────────────────────────────────────────────────────
-const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-const DOW_ES = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
-
-function DatePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const today = new Date()
-  const selected = value ? new Date(value + 'T12:00:00') : null
-
-  const [open, setOpen] = useState(false)
-  const [navYear, setNavYear] = useState(selected?.getFullYear() ?? today.getFullYear())
-  const [navMonth, setNavMonth] = useState(selected?.getMonth() ?? today.getMonth())
-  const [yearMode, setYearMode] = useState(false)
-  const [monthMode, setMonthMode] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const yearGridRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (value) {
-      const d = new Date(value + 'T12:00:00')
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setNavYear(d.getFullYear())
-      setNavMonth(d.getMonth())
-    }
-  }, [value])
-
-  useEffect(() => {
-    function h(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false); setYearMode(false); setMonthMode(false)
-      }
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [])
-
-  useEffect(() => {
-    if (yearMode && yearGridRef.current) {
-      const el = yearGridRef.current.querySelector('[data-current="true"]') as HTMLElement | null
-      el?.scrollIntoView({ block: 'center' })
-    }
-  }, [yearMode])
-
-  function prevMonth() {
-    if (navMonth === 0) { setNavMonth(11); setNavYear(y => y - 1) }
-    else setNavMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (navMonth === 11) { setNavMonth(0); setNavYear(y => y + 1) }
-    else setNavMonth(m => m + 1)
-  }
-
-  function selectDay(date: Date) {
-    const yyyy = date.getFullYear()
-    const mm = String(date.getMonth() + 1).padStart(2, '0')
-    const dd = String(date.getDate()).padStart(2, '0')
-    onChange(`${yyyy}-${mm}-${dd}`)
-    setOpen(false); setYearMode(false); setMonthMode(false)
-  }
-
-  function getCalendarDays() {
-    const firstDay = new Date(navYear, navMonth, 1)
-    const lastDay = new Date(navYear, navMonth + 1, 0)
-    let startDow = firstDay.getDay()
-    startDow = startDow === 0 ? 6 : startDow - 1
-
-    const days: { date: Date; current: boolean }[] = []
-    for (let i = startDow - 1; i >= 0; i--)
-      days.push({ date: new Date(navYear, navMonth, -i), current: false })
-    for (let d = 1; d <= lastDay.getDate(); d++)
-      days.push({ date: new Date(navYear, navMonth, d), current: true })
-    const remaining = 42 - days.length
-    for (let d = 1; d <= remaining; d++)
-      days.push({ date: new Date(navYear, navMonth + 1, d), current: false })
-    return days
-  }
-
-  const isToday = (d: Date) => d.toDateString() === today.toDateString()
-  const isSelected = (d: Date) => !!selected && d.toDateString() === selected.toDateString()
-
-  const displayText = selected
-    ? `${String(selected.getDate()).padStart(2, '0')}/${String(selected.getMonth() + 1).padStart(2, '0')}/${selected.getFullYear()}`
-    : 'DD/MM/AAAA'
-
-  const yearFrom = today.getFullYear() - 100
-  const yearTo = today.getFullYear() + 10
-  const years = Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i)
-
-  return (
-    <div ref={containerRef} style={{ position: 'relative' }}>
-      <div onClick={() => { setOpen(o => !o); setYearMode(false); setMonthMode(false) }}
-        style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}>
-        <span style={{ color: selected ? 'var(--text)' : 'var(--muted)' }}>{displayText}</span>
-        <CalendarDays size={14} style={{ color: 'var(--green)', flexShrink: 0 }} />
-      </div>
-
-      {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, zIndex: 200, background: 'var(--surface)', border: '1px solid var(--border2)', borderRadius: 12, boxShadow: '0 16px 40px rgba(0,0,0,0.5)', padding: '14px 12px', width: 268 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            {!yearMode && !monthMode && (
-              <button onClick={prevMonth} style={{ background: 'var(--surface2)', border: '1px solid var(--border2)', borderRadius: 6, cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center', padding: '4px 6px' }}>
-                <ChevronLeft size={13} />
-              </button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: (yearMode || monthMode) ? 1 : 'none' }}>
-              <button onClick={() => { setMonthMode(m => !m); setYearMode(false) }}
-                style={{ display: 'flex', alignItems: 'center', gap: 3, background: monthMode ? 'rgba(74,222,128,0.12)' : 'var(--surface2)', border: `1px solid ${monthMode ? 'var(--green)' : 'var(--border2)'}`, borderRadius: 6, cursor: 'pointer', color: monthMode ? 'var(--green)' : 'var(--text)', padding: '3px 8px', fontSize: 12, fontWeight: 800, transition: 'all 0.15s' }}>
-                {MONTHS_ES[navMonth]}
-                <ChevronDown size={11} style={{ transform: monthMode ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
-              </button>
-              <button onClick={() => { setYearMode(m => !m); setMonthMode(false) }}
-                style={{ display: 'flex', alignItems: 'center', gap: 3, background: yearMode ? 'rgba(74,222,128,0.12)' : 'var(--surface2)', border: `1px solid ${yearMode ? 'var(--green)' : 'var(--border2)'}`, borderRadius: 6, cursor: 'pointer', color: yearMode ? 'var(--green)' : 'var(--text)', padding: '3px 8px', fontSize: 12, fontWeight: 800, transition: 'all 0.15s' }}>
-                {navYear}
-                <ChevronDown size={11} style={{ transform: yearMode ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
-              </button>
-            </div>
-            {!yearMode && !monthMode && (
-              <button onClick={nextMonth} style={{ background: 'var(--surface2)', border: '1px solid var(--border2)', borderRadius: 6, cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center', padding: '4px 6px' }}>
-                <ChevronRight size={13} />
-              </button>
-            )}
-          </div>
-
-          {monthMode ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-              {MONTHS_ES.map((m, i) => {
-                const isCurrent = i === navMonth
-                const isNow = i === today.getMonth() && navYear === today.getFullYear()
-                return (
-                  <div key={i} onClick={() => setNavMonth(i)}
-                    style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 7, fontSize: 11, cursor: 'pointer', fontWeight: isCurrent ? 800 : 400, background: isCurrent ? 'var(--green)' : isNow ? 'rgba(74,222,128,0.1)' : 'transparent', color: isCurrent ? '#000' : isNow ? 'var(--green)' : 'var(--text)', border: isNow && !isCurrent ? '1px solid rgba(74,222,128,0.35)' : '1px solid transparent' }}
-                    onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = 'var(--surface2)' }}
-                    onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = isNow ? 'rgba(74,222,128,0.1)' : 'transparent' }}
-                  >
-                    {m.slice(0, 3)}
-                  </div>
-                )
-              })}
-            </div>
-          ) : yearMode ? (
-            <div ref={yearGridRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, maxHeight: 200, overflowY: 'auto', paddingRight: 2 }}>
-              {years.map(y => {
-                const isCurrent = y === navYear
-                const isNow_ = y === today.getFullYear()
-                return (
-                  <div key={y} data-current={isCurrent ? 'true' : 'false'}
-                    onClick={() => { setNavYear(y); setYearMode(false) }}
-                    style={{ textAlign: 'center', padding: '6px 4px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontWeight: isCurrent ? 800 : 400, background: isCurrent ? 'var(--green)' : isNow_ ? 'rgba(74,222,128,0.1)' : 'transparent', color: isCurrent ? '#000' : isNow_ ? 'var(--green)' : 'var(--text)', border: isNow_ && !isCurrent ? '1px solid rgba(74,222,128,0.35)' : '1px solid transparent' }}
-                    onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = 'var(--surface2)' }}
-                    onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = isNow_ ? 'rgba(74,222,128,0.1)' : 'transparent' }}
-                  >
-                    {y}
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
-                {DOW_ES.map((d, i) => (
-                  <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--muted)', padding: '2px 0' }}>{d}</div>
-                ))}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
-                {getCalendarDays().map((d, i) => {
-                  const sel = isSelected(d.date)
-                  const tod = isToday(d.date)
-                  return (
-                    <div key={i} onClick={() => selectDay(d.date)}
-                      style={{ textAlign: 'center', fontSize: 11, padding: '5px 0', borderRadius: 6, cursor: 'pointer', fontWeight: sel ? 800 : tod ? 700 : 400, color: sel ? '#000' : !d.current ? 'rgba(148,163,184,0.35)' : tod ? 'var(--green)' : 'var(--text)', background: sel ? 'var(--green)' : tod ? 'rgba(74,222,128,0.1)' : 'transparent', border: tod && !sel ? '1px solid rgba(74,222,128,0.35)' : '1px solid transparent', boxShadow: sel ? '0 0 8px rgba(74,222,128,0.4)' : 'none' }}
-                      onMouseEnter={e => { if (!sel) e.currentTarget.style.background = tod ? 'rgba(74,222,128,0.18)' : 'var(--surface2)' }}
-                      onMouseLeave={e => { if (!sel) e.currentTarget.style.background = tod ? 'rgba(74,222,128,0.1)' : 'transparent' }}
-                    >
-                      {d.date.getDate()}
-                    </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
-
-          {selected && !yearMode && !monthMode && (
-            <div style={{ borderTop: '1px solid var(--border2)', marginTop: 10, paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 10, color: 'var(--muted)' }}>{displayText}</span>
-              <button onClick={() => { onChange(''); setOpen(false) }}
-                style={{ fontSize: 10, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                Borrar
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── Paso 1 — Cuenta ──────────────────────────────────────────────────────────
 function StepCuenta({ data, onChange, editMode, socioEmail }: {
   data: FaseCuenta
@@ -1127,7 +952,7 @@ function StepSalud({ data, onChange, isMinor, guardianDisplayName }: {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
       <p style={{ fontSize: 12, color: 'var(--muted)' }}>Datos de seguridad visibles para el entrenador. Obligatorio para operar en el local.</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 13 }}>
-        <Field label="Contacto de emergencia">
+        <Field label="Contacto de emergencia" required>
           <input
             data-testid="wizard-input-emergency-name"
             value={data.emergency_name}
@@ -1136,7 +961,7 @@ function StepSalud({ data, onChange, isMinor, guardianDisplayName }: {
             onChange={e => onChange({ ...data, emergency_name: e.target.value })}
           />
         </Field>
-        <Field label="Teléfono de emergencia">
+        <Field label="Teléfono de emergencia" required>
           <input
             data-testid="wizard-input-emergency-phone"
             value={data.emergency_phone}
@@ -1183,7 +1008,178 @@ function StepSalud({ data, onChange, isMinor, guardianDisplayName }: {
   )
 }
 
-// ─── Paso 4 — Membresía ───────────────────────────────────────────────────────
+// ─── Paso 3 — Foto ───────────────────────────────────────────────────────────
+function StepFoto({ foto, onCapture }: { foto: Blob | null; onCapture: (b: Blob | null) => void }) {
+  const videoRef    = useRef<HTMLVideoElement>(null)
+  const streamRef   = useRef<MediaStream | null>(null)
+  const [live, setLive]         = useState(false)
+  const [preview, setPreview]   = useState<string | null>(foto ? URL.createObjectURL(foto) : null)
+  const [camErr, setCamErr]     = useState<string | null>(null)
+
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach(t => t.stop())
+      if (preview) URL.revokeObjectURL(preview)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Adjunta el stream al <video> una vez que React lo haya montado en el DOM
+  useEffect(() => {
+    if (live && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+      videoRef.current.play().catch(() => {/* ignorar autoplay policy en contextos seguros */})
+    }
+  }, [live])
+
+  async function startCamera() {
+    setCamErr(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 480 } },
+      })
+      streamRef.current = stream
+      setLive(true) // el useEffect de arriba adjunta el stream cuando el <video> esté en el DOM
+    } catch {
+      setCamErr('No se pudo acceder a la cámara. Verificá los permisos del navegador.')
+    }
+  }
+
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    setLive(false)
+  }
+
+  function capture() {
+    const video = videoRef.current
+    if (!video || !video.videoWidth || !video.videoHeight) return
+    const canvas = document.createElement('canvas')
+    const size = Math.min(video.videoWidth, video.videoHeight)
+    canvas.width = 320
+    canvas.height = 320
+    const ctx = canvas.getContext('2d')!
+    const offsetX = (video.videoWidth  - size) / 2
+    const offsetY = (video.videoHeight - size) / 2
+    ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, 320, 320)
+    canvas.toBlob(blob => {
+      if (!blob) return
+      if (preview) URL.revokeObjectURL(preview)
+      setPreview(URL.createObjectURL(blob))
+      onCapture(blob)
+      stopCamera()
+    }, 'image/jpeg', 0.88)
+  }
+
+  function retake() {
+    if (preview) URL.revokeObjectURL(preview)
+    setPreview(null)
+    onCapture(null)
+    startCamera()
+  }
+
+  return (
+    <div data-testid="wizard-step-photo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+      <p style={{ fontSize: 12, color: 'var(--muted)', alignSelf: 'flex-start' }}>
+        Foto de perfil del socio. Este paso es opcional.
+      </p>
+
+      {/* Área de captura */}
+      <div style={{
+        width: 240, height: 240, borderRadius: '50%',
+        background: 'var(--surface2)', border: '2px solid var(--border2)',
+        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, position: 'relative',
+      }}>
+        {preview && !live && (
+          <img
+            data-testid="wizard-photo-preview"
+            src={preview}
+            alt="Foto capturada"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
+        {live && (
+          <video
+            ref={videoRef}
+            data-testid="wizard-photo-video"
+            muted
+            playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
+          />
+        )}
+        {!preview && !live && (
+          <Camera size={48} color="var(--muted)" />
+        )}
+      </div>
+
+      {camErr && (
+        <p style={{ fontSize: 11, color: '#f87171', textAlign: 'center' }}>{camErr}</p>
+      )}
+
+      {/* Controles */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        {!live && !preview && (
+          <button
+            data-testid="wizard-photo-btn-start"
+            type="button"
+            onClick={startCamera}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 8, border: '1px solid var(--border2)', background: 'var(--surface2)', color: 'var(--text)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+          >
+            <Camera size={14} />
+            Activar cámara
+          </button>
+        )}
+        {live && (
+          <>
+            <button
+              data-testid="wizard-photo-btn-capture"
+              type="button"
+              onClick={capture}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 8, border: 'none', background: 'var(--green)', color: '#000', fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 0 8px rgba(74,222,128,0.3)' }}
+            >
+              <Camera size={14} />
+              Capturar
+            </button>
+            <button
+              data-testid="wizard-photo-btn-cancel"
+              type="button"
+              onClick={stopCamera}
+              style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border2)', background: 'transparent', color: 'var(--muted)', fontSize: 12, cursor: 'pointer' }}
+            >
+              Cancelar
+            </button>
+          </>
+        )}
+        {preview && !live && (
+          <>
+            <button
+              data-testid="wizard-photo-btn-retake"
+              type="button"
+              onClick={retake}
+              style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--border2)', background: 'var(--surface2)', color: 'var(--text)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Retomar
+            </button>
+            <button
+              data-testid="wizard-photo-btn-remove"
+              type="button"
+              onClick={() => { if (preview) URL.revokeObjectURL(preview); setPreview(null); onCapture(null) }}
+              style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid rgba(248,113,113,0.3)', background: 'transparent', color: '#f87171', fontSize: 12, cursor: 'pointer' }}
+            >
+              Quitar foto
+            </button>
+          </>
+        )}
+      </div>
+
+      {preview && (
+        <p style={{ fontSize: 10, color: 'var(--green)', fontWeight: 700 }}>✓ Foto lista para guardar</p>
+      )}
+    </div>
+  )
+}
+
+// ─── Paso 5 — Membresía ───────────────────────────────────────────────────────
 function StepMembresia({ data, onChange, planes, sucursales, sucursalesLoading }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: FaseMembresia; onChange: (d: FaseMembresia) => void; planes: any[]; sucursales: any[]; sucursalesLoading: boolean

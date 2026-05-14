@@ -1,29 +1,35 @@
 // src/components/socios/modals/DescongelarModal.tsx
 // Levanta el congelamiento de forma anticipada.
-// Recalcula end_date: descuenta los días de freeze no usados.
+// Usa gestionar-congelamiento action='descongelar' (service_role) para recalcular
+// end_date con días reales y registrar en membership_state_log (GMS-42).
 
 import { useState, useEffect } from 'react'
 import { X, Snowflake, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
+import { calcFreezeUnfreeze } from '../../../lib/freezeCalc'
 import type { Socio } from '../../../types'
 
 interface Props {
-  socio: Socio
-  onClose: () => void
+  socio:    Socio
+  onClose:  () => void
   onSuccess: () => void
 }
 
 interface FreezeData {
   freeze_start_date: string
-  freeze_end_date: string
-  freeze_days: number
-  end_date: string
+  freeze_end_date:   string
+  freeze_days:       number
+  end_date:          string
+}
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 export default function DescongelarModal({ socio, onClose, onSuccess }: Props) {
   const [freezeData, setFreezeData] = useState<FreezeData | null>(null)
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState<string | null>(null)
+  const [loading,    setLoading]    = useState(false)
+  const [error,      setError]      = useState<string | null>(null)
 
   useEffect(() => {
     if (!socio.membershipId) return
@@ -35,44 +41,25 @@ export default function DescongelarModal({ socio, onClose, onSuccess }: Props) {
       .then(({ data }) => { if (data) setFreezeData(data as FreezeData) })
   }, [socio.membershipId])
 
-  // Días realmente usados hasta hoy desde el inicio del freeze
-  const diasUsados = (() => {
-    if (!freezeData?.freeze_start_date) return 0
-    const start = new Date(freezeData.freeze_start_date)
-    const diff  = Math.ceil((Date.now() - start.getTime()) / (1000 * 60 * 60 * 24))
-    return Math.max(0, Math.min(diff, freezeData.freeze_days ?? 0))
-  })()
-
-  // Nuevo end_date: restar los días de freeze no usados del end_date original
-  const newEndDate = (() => {
-    if (!freezeData?.end_date) return null
-    const diasNoUsados = (freezeData.freeze_days ?? 0) - diasUsados
-    const d = new Date(freezeData.end_date)
-    d.setDate(d.getDate() - diasNoUsados)
-    return d.toISOString().split('T')[0]
-  })()
-
-  function fmtDate(iso: string) {
-    return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  }
+  const calc = freezeData
+    ? calcFreezeUnfreeze({
+        freeze_start_date: freezeData.freeze_start_date,
+        freeze_days:       freezeData.freeze_days,
+        end_date:          freezeData.end_date,
+      })
+    : null
 
   async function handleConfirm() {
     if (!socio.membershipId) return
     setLoading(true)
     setError(null)
 
-    const { error: updateErr } = await supabase
-      .from('memberships')
-      .update({
-        status:   'ACTIVA',
-        end_date: newEndDate ? new Date(newEndDate).toISOString() : undefined,
-        // Conservamos freeze_* para auditoría, solo limpiamos freeze_end_date
-        freeze_end_date: new Date().toISOString(),
-      })
-      .eq('id', socio.membershipId)
+    const { data, error: fnErr } = await supabase.functions.invoke('gestionar-congelamiento', {
+      body: { action: 'descongelar', membership_id: socio.membershipId },
+    })
 
-    if (updateErr) {
-      setError(updateErr.message)
+    if (fnErr || !data?.ok) {
+      setError(fnErr?.message ?? data?.error ?? 'Error al descongelar')
       setLoading(false)
       return
     }
@@ -118,7 +105,7 @@ export default function DescongelarModal({ socio, onClose, onSuccess }: Props) {
         <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Resumen del freeze */}
-          {freezeData ? (
+          {freezeData && calc ? (
             <div style={{
               display: 'flex', flexDirection: 'column', gap: 8,
               padding: 14, borderRadius: 8,
@@ -127,12 +114,15 @@ export default function DescongelarModal({ socio, onClose, onSuccess }: Props) {
               {[
                 ['Inicio congelamiento', fmtDate(freezeData.freeze_start_date)],
                 ['Días planificados',    `${freezeData.freeze_days} días`],
-                ['Días usados',          `${diasUsados} días`],
-                ['Nuevo vencimiento',    newEndDate ? fmtDate(newEndDate) : '—'],
+                ['Días usados',          `${calc.diasUsados} días`],
+                ['Nuevo vencimiento',    fmtDate(calc.newEndDate)],
               ].map(([label, val]) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: 'var(--muted)' }}>{label}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: label === 'Nuevo vencimiento' ? 'var(--green)' : 'var(--text)' }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    color: label === 'Nuevo vencimiento' ? 'var(--green)' : 'var(--text)',
+                  }}>
                     {val}
                   </span>
                 </div>

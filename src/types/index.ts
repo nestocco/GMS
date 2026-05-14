@@ -42,9 +42,11 @@ export interface Socio {
   sede: string
   vencimiento: string
   fechaAlta: string
+  createdAt: string       // ISO — para cálculo de antigüedad en descuentos
   isActive: boolean
   diasRestantes: number   // días hasta end_date; -1 si no hay membresía
   hasDeuda: boolean       // true si hay al menos una cuota sin pagar
+  photo_url: string | null
 }
 
 // ─── Planes ──────────────────────────────────────────────────────────────────
@@ -115,28 +117,33 @@ export interface Cobro {
 
 // ─── Alertas ─────────────────────────────────────────────────────────────────
 export type AlertaTipo =
-  | 'MULTIDISPOSITIVO'
-  | 'FRECUENCIA_IRREGULAR'
-  | 'ANALISIS_GEOGRAFICO'
-  | 'INACTIVIDAD_DESERCION'
-  | 'EDGE_SIN_SINCRONIZAR'
-  | 'FIRMA_QR_INVALIDA'
+  | 'IMPAGO'
+  | 'DESERCION'
+  | 'ANOMALIA'
+  | 'INFRAESTRUCTURA'
+  | 'CONGELAMIENTO'
 
 export type AlertaSeveridad = 'CRITICA' | 'MEDIA' | 'INFORMATIVA'
-export type AlertaEstado = 'ABIERTA' | 'EN_REVISION' | 'RESUELTA' | 'DESCARTADA'
+export type AlertaEstado    = 'PENDIENTE' | 'RESUELTA' | 'IGNORADA'
 
 export interface Alerta {
-  id: string
-  tipo: AlertaTipo
-  severidad: AlertaSeveridad
-  estado: AlertaEstado
-  descripcion: string
-  sede: string
-  socio: string | null
-  accionSugerida: string
-  evidence: Record<string, unknown> | null
-  fecha: string
-  creadoEn: string
+  id:              string
+  tipo:            AlertaTipo
+  severidad:       AlertaSeveridad
+  estado:          AlertaEstado
+  titulo:          string
+  descripcion:     string | null
+  sede:            string
+  branch_id:       string | null
+  fecha:           string
+  hora:            string
+  socio_id:        string | null
+  socio_nombre:    string | undefined
+  socio_dni:       string | undefined
+  edge_device_id:  string | null
+  accion_sugerida: string
+  metadata:        Record<string, unknown> | null
+  resolved_at:     string | null
 }
 
 // ─── Staff ───────────────────────────────────────────────────────────────────

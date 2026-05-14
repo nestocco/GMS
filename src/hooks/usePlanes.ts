@@ -1,5 +1,5 @@
 // src/hooks/usePlanes.ts
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Plan } from '../types'
 
@@ -15,6 +15,9 @@ export function usePlanes() {
   const [planes, setPlanes] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
+
+  const reload = useCallback(() => setTick(t => t + 1), [])
 
   useEffect(() => {
     async function fetchPlanes() {
@@ -70,7 +73,7 @@ export function usePlanes() {
     }
 
     fetchPlanes()
-  }, [])
+  }, [tick])
 
-  return { planes, loading, error }
+  return { planes, loading, error, reload }
 }

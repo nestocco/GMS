@@ -24,7 +24,8 @@ export function useSocios() {
             first_name,
             last_name,
             dni,
-            birth_date
+            birth_date,
+            photo_url
           ),
           memberships!memberships_user_id_fkey (
             id,
@@ -122,9 +123,11 @@ export function useSocios() {
           sede: latestMembership?.branches?.name ?? '—',
           vencimiento: formatDate(latestMembership?.end_date ?? null),
           fechaAlta: formatDate(u.created_at),
+          createdAt: u.created_at,
           isActive: u.is_active,
           diasRestantes: calcDiasRestantes(latestMembership),
           hasDeuda: calcHasDeuda(latestMembership),
+          photo_url: profile?.photo_url ?? null,
         }
       })
 

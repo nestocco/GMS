@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Search } from 'lucide-react'
 import StatusBadge from '../shared/StatusBadge'
 import { useSucursales } from '../../hooks/useSucursales'
+import { supabase } from '../../lib/supabase'
 import type { Socio } from '../../types'
 
 const avatarColors: Record<string, { bg: string; color: string }> = {
@@ -18,20 +19,64 @@ interface Props {
   onSelect: (socio: Socio) => void
 }
 
+const PAGE_SIZE = 15
+
 export default function SociosList({ socios, selectedId, onSelect }: Props) {
   const { sucursales } = useSucursales()
   const [search, setSearch]       = useState('')
   const [sede, setSede]           = useState('Todas')
   const [estado, setEstado]       = useState('Todos')
+  const [page, setPage]           = useState(1)
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({})
 
-  const filtered = socios.filter(s => {
+  const filtered = useMemo(() => socios.filter(s => {
     const matchSearch = s.nombre.toLowerCase().includes(search.toLowerCase())
       || s.dni.includes(search)
       || s.email.toLowerCase().includes(search.toLowerCase())
     const matchSede   = sede   === 'Todas'  || s.sede   === sede
     const matchEstado = estado === 'Todos'  || s.status === estado
     return matchSearch && matchSede && matchEstado
-  })
+  }), [socios, search, sede, estado])
+
+  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated   = useMemo(
+    () => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [filtered, currentPage]
+  )
+
+  // Generar signed URLs en batch para los socios visibles. La clave pageKey
+  // es estable: solo cambia cuando cambian los IDs de la página, no en cada render.
+  const pageKey = paginated.map(s => s.id).join(',')
+  useEffect(() => {
+    const withPhoto = paginated.filter(s => s.photo_url && !signedUrls[s.id])
+    if (withPhoto.length === 0) return
+    const paths = withPhoto.map(s => s.photo_url!)
+    supabase.storage.from('member-photos').createSignedUrls(paths, 3600).then(({ data }) => {
+      if (!data) return
+      const map: Record<string, string> = {}
+      data.forEach(entry => {
+        const socio = withPhoto.find(s => s.photo_url === entry.path)
+        if (socio && entry.signedUrl) map[socio.id] = entry.signedUrl
+      })
+      if (Object.keys(map).length > 0) setSignedUrls(prev => ({ ...prev, ...map }))
+    })
+  }, [pageKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Resetear a página 1 al cambiar filtros
+  const handleSearch = (v: string) => { setSearch(v); setPage(1) }
+  const handleSede   = (v: string) => { setSede(v);   setPage(1) }
+  const handleEstado = (v: string) => { setEstado(v); setPage(1) }
+
+  // Ventana de páginas: máximo 5 botones centrados en la página actual
+  function pageWindow(): number[] {
+    const delta = 2
+    const start = Math.max(1, currentPage - delta)
+    const end   = Math.min(totalPages, currentPage + delta)
+    const pages: number[] = []
+    for (let i = start; i <= end; i++) pages.push(i)
+    return pages
+  }
 
   return (
     <div className="flex flex-col flex-1 min-w-0" style={{ borderRight: '1px solid var(--border2)' }}>
@@ -50,7 +95,7 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
           <input
             data-testid="members-filter-search"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             placeholder="Buscar por nombre, DNI o email..."
             style={{
               border: 'none', background: 'transparent',
@@ -63,7 +108,7 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
         <select
           data-testid="members-filter-branch"
           value={sede}
-          onChange={e => setSede(e.target.value)}
+          onChange={e => handleSede(e.target.value)}
           style={{
             padding: '7px 10px', borderRadius: 8,
             background: 'var(--surface2)', border: '1px solid var(--border2)',
@@ -85,7 +130,7 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
               key={s}
               data-testid="members-filter-status"
               data-status={s}
-              onClick={() => setEstado(s)}
+              onClick={() => handleEstado(s)}
               style={{
                 padding: '4px 8px', borderRadius: 6,
                 fontSize: 9, fontWeight: 700, cursor: 'pointer', border: 'none',
@@ -120,7 +165,7 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map(s => {
+            {paginated.map(s => {
               const av = avatarColors[s.status]
               const isSelected = s.id === selectedId
               return (
@@ -149,8 +194,12 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
                         background: av.bg, color: av.color,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 11, fontWeight: 800, flexShrink: 0,
+                        overflow: 'hidden',
                       }}>
-                        {s.iniciales}
+                        {signedUrls[s.id]
+                          ? <img src={signedUrls[s.id]} alt={s.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : s.iniciales
+                        }
                       </div>
                       <div>
                         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{s.nombre}</p>
@@ -177,24 +226,59 @@ export default function SociosList({ socios, selectedId, onSelect }: Props) {
         style={{ background: 'var(--surface)', borderTop: '1px solid var(--border2)' }}
       >
         <span style={{ fontSize: 10, color: 'var(--muted)' }}>
-          Mostrando {filtered.length} de {socios.length} socios
+          {filtered.length === socios.length
+            ? `${socios.length} socios`
+            : `${filtered.length} de ${socios.length} socios`}
+          {totalPages > 1 && ` · Página ${currentPage} de ${totalPages}`}
         </span>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {['‹', '1', '2', '3', '›'].map((p, i) => (
+
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', gap: 4 }}>
             <button
-              key={i}
+              data-testid="members-pagination-prev"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
               style={{
                 width: 28, height: 28, borderRadius: 6,
                 border: '1px solid var(--border2)',
-                background: p === '1' ? 'var(--green-deep)' : 'var(--surface2)',
-                color: p === '1' ? 'var(--green)' : 'var(--muted)',
-                fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                background: 'var(--surface2)',
+                color: currentPage === 1 ? 'var(--border2)' : 'var(--muted)',
+                fontSize: 13, fontWeight: 700, cursor: currentPage === 1 ? 'default' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-            >
-            </button>
-          ))}
-        </div>
+            >‹</button>
+
+            {pageWindow().map(n => (
+              <button
+                key={n}
+                data-testid="members-pagination-page"
+                onClick={() => setPage(n)}
+                style={{
+                  width: 28, height: 28, borderRadius: 6,
+                  border: '1px solid var(--border2)',
+                  background: n === currentPage ? 'var(--green-deep)' : 'var(--surface2)',
+                  color: n === currentPage ? 'var(--green)' : 'var(--muted)',
+                  fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >{n}</button>
+            ))}
+
+            <button
+              data-testid="members-pagination-next"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              style={{
+                width: 28, height: 28, borderRadius: 6,
+                border: '1px solid var(--border2)',
+                background: 'var(--surface2)',
+                color: currentPage === totalPages ? 'var(--border2)' : 'var(--muted)',
+                fontSize: 13, fontWeight: 700, cursor: currentPage === totalPages ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >›</button>
+          </div>
+        )}
       </div>
     </div>
   )

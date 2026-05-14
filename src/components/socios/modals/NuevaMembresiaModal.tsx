@@ -4,11 +4,13 @@
 //   'renovar'          — EN_GRACIA, start_date = hoy
 //   'renovarAnticipado'— ACTIVA ≤ N días, start_date = end_date actual (encadena)
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { X, AlertTriangle, Zap } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { usePlanes } from '../../../hooks/usePlanes'
 import { useSucursales } from '../../../hooks/useSucursales'
+import { useAppSettings } from '../../../hooks/useAppSettings'
+import { calcDiscount } from '../../../lib/discountCalc'
 import type { Socio } from '../../../types'
 
 export type NuevaMembresiaMode = 'crear' | 'renovar' | 'renovarAnticipado'
@@ -43,8 +45,9 @@ function fmtDate(iso: string) {
 }
 
 export default function NuevaMembresiaModal({ socio, mode, onClose, onSuccess }: Props) {
-  const { planes, loading: planesLoading }       = usePlanes()
-  const { sucursales, loading: sucLoading }       = useSucursales()
+  const { planes, loading: planesLoading }         = usePlanes()
+  const { sucursales, loading: sucLoading }         = useSucursales()
+  const { settings, loading: settingsLoading, load: loadSettings } = useAppSettings()
 
   const [planId, setPlanId]           = useState('')
   const [branchId, setBranchId]       = useState(socio.membershipId ? '' : '')
@@ -56,6 +59,22 @@ export default function NuevaMembresiaModal({ socio, mode, onClose, onSuccess }:
 
   const selectedPlan = planes.find(p => p.id === planId)
   const meta = MODE_META[mode]
+
+  useEffect(() => { loadSettings() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const memberDays = useMemo(() => {
+    if (!socio.createdAt) return 0
+    return Math.floor((Date.now() - new Date(socio.createdAt).getTime()) / 86_400_000)
+  }, [socio.createdAt])
+
+  const discount = useMemo(() => {
+    if (!selectedPlan || settingsLoading) return null
+    return calcDiscount({ memberDays, planDays: selectedPlan.duracion, planNivel: selectedPlan.nivel }, settings)
+  }, [selectedPlan, settings, memberDays, settingsLoading])
+
+  const basePrice     = selectedPlan?.precio ?? 0
+  const discountAmt   = discount ? Math.round(basePrice * discount.final / 100) : 0
+  const finalPrice    = basePrice - discountAmt
 
   // Para 'renovarAnticipado': cargar end_date de la membresía actual
   useEffect(() => {
@@ -100,7 +119,7 @@ export default function NuevaMembresiaModal({ socio, mode, onClose, onSuccess }:
         start_date:         startDate ?? new Date().toISOString(),
         plan_duration_days: selectedPlan.duracion,
         base_price:         selectedPlan.precio,
-        final_price:        selectedPlan.precio,
+        final_price:        finalPrice,
         metodo_pago:        metodo,
         payment_type:       paymentType,
       },
@@ -203,14 +222,47 @@ export default function NuevaMembresiaModal({ socio, mode, onClose, onSuccess }:
           {/* Resumen de precio */}
           {selectedPlan && (
             <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '10px 14px', borderRadius: 8,
+              borderRadius: 8, overflow: 'hidden',
               background: 'rgba(45,90,39,0.06)', border: '1px solid rgba(45,90,39,0.15)',
             }}>
-              <span style={{ fontSize: 11, color: 'var(--muted)' }}>Total</span>
-              <span style={{ fontSize: 15, fontWeight: 900, color: 'var(--green)' }}>
-                ${selectedPlan.precio.toLocaleString('es-AR')}
-              </span>
+              {/* Precio base */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px' }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)' }}>Precio base</span>
+                <span style={{ fontSize: 12, color: 'var(--metal)' }}>${basePrice.toLocaleString('es-AR')}</span>
+              </div>
+
+              {/* Descuento — visible si hay algún factor activo */}
+              {discount && discount.final > 0 && (
+                <div style={{ borderTop: '1px solid rgba(143,188,143,0.1)', padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>
+                      Descuento por fidelidad{discount.capped ? ' (tope)' : ''}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>
+                      -{discount.final}% (−${discountAmt.toLocaleString('es-AR')})
+                    </span>
+                  </div>
+                  {/* Desglose por factor */}
+                  {[
+                    { label: 'Continuidad', value: discount.cont },
+                    { label: 'Volumen',     value: discount.vol },
+                    { label: 'Nivel',       value: discount.nivel },
+                  ].filter(f => f.value > 0).map(f => (
+                    <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: 8, fontSize: 10, color: 'var(--muted)' }}>
+                      <span>· {f.label}</span>
+                      <span>+{f.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Total final */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderTop: '1px solid rgba(143,188,143,0.1)' }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 700 }}>Total</span>
+                <span style={{ fontSize: 15, fontWeight: 900, color: 'var(--green)' }}>
+                  ${finalPrice.toLocaleString('es-AR')}
+                </span>
+              </div>
             </div>
           )}
 
@@ -239,8 +291,8 @@ export default function NuevaMembresiaModal({ socio, mode, onClose, onSuccess }:
                   {selectedPlan && (
                     <span style={{ display: 'block', fontSize: 10, fontWeight: 400, marginTop: 2 }}>
                       ${(t.value === 'CUOTA_1'
-                        ? Math.round(selectedPlan.precio / 2)
-                        : selectedPlan.precio
+                        ? Math.round(finalPrice / 2)
+                        : finalPrice
                       ).toLocaleString('es-AR')}
                     </span>
                   )}

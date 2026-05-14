@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Edit2 } from 'lucide-react'
+import { X, Edit2, Snowflake } from 'lucide-react'
 import StatusBadge from '../shared/StatusBadge'
 import { useGymSettings } from '../../hooks/useGymSettings'
 import { supabase } from '../../lib/supabase'
@@ -29,6 +29,18 @@ interface ProfileData {
   guardian_name:         string | null
   guardian_phone:        string | null
   guardian_relationship: string | null
+  photo_url:             string | null
+}
+
+interface FreezeQuotaData {
+  diasDisponibles: number
+  diasQuota:       number
+  startDate:       string | null
+  endDate:         string | null
+}
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function calcAge(birth_date: string | null): number | null {
@@ -52,7 +64,7 @@ interface Props {
   onRefresh?: () => void
 }
 
-const CAN_VIEW_HEALTH: AuthUser['role'][] = ['R1_DUENO', 'R2_ENCARGADO']
+const CAN_VIEW_HEALTH: AuthUser['role'][] = ['R1_DUENO', 'R2_ENCARGADO', 'R4_ENTRENADOR']
 
 // ── Definición de botón ───────────────────────────────────────────────────────
 interface ActionButton {
@@ -134,31 +146,68 @@ function resolveButtons(
 // ── Componente ────────────────────────────────────────────────────────────────
 export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) {
   const { settings } = useGymSettings()
-  const [activeModal, setActiveModal] = useState<ActiveModal>(null)
-  const [health,   setHealth]   = useState<HealthData | null>(null)
-  const [profile,  setProfile]  = useState<ProfileData | null>(null)
+  const [activeModal,  setActiveModal]  = useState<ActiveModal>(null)
+  const [health,       setHealth]       = useState<HealthData | null>(null)
+  const [profile,      setProfile]      = useState<ProfileData | null>(null)
+  const [photoUrl,     setPhotoUrl]     = useState<string | null>(null)
+  const [freezeQuota,  setFreezeQuota]  = useState<FreezeQuotaData | null>(null)
 
-  const canViewHealth  = CAN_VIEW_HEALTH.includes(user.role)
+  const canViewHealth   = CAN_VIEW_HEALTH.includes(user.role)
   const canFetchProfile = ['R1_DUENO', 'R2_ENCARGADO', 'R3_STAFF'].includes(user.role)
+  const isR4            = user.role === 'R4_ENTRENADOR'
+
+  useEffect(() => {
+    setFreezeQuota(null)
+    if (!socio.membershipId) return
+    let cancelled = false
+    supabase
+      .from('memberships')
+      .select('freeze_days_quota, freeze_days_used, freeze_start_date, freeze_end_date, status')
+      .eq('id', socio.membershipId)
+      .single()
+      .then(({ data }) => {
+        if (cancelled || !data) return
+        const quota = data.freeze_days_quota ?? 0
+        if (quota === 0) return
+        setFreezeQuota({
+          diasDisponibles: Math.max(0, quota - (data.freeze_days_used ?? 0)),
+          diasQuota:       quota,
+          startDate:       data.freeze_start_date ?? null,
+          endDate:         data.freeze_end_date   ?? null,
+        })
+      })
+    return () => { cancelled = true }
+  }, [socio.membershipId])
 
   useEffect(() => {
     setHealth(null)
     setProfile(null)
-    if (!canFetchProfile) return
+    setPhotoUrl(null)
+    if (!canFetchProfile && !isR4) return
     supabase.functions.invoke('editar-socio', {
       body: { action: 'get', socio_id: socio.id },
-    }).then(({ data }) => {
+    }).then(async ({ data }) => {
       if (data?.ok) {
         const p = data.profile
-        setProfile({
-          phone:                 p.phone                 ?? null,
-          birth_date:            p.birth_date            ?? null,
-          guardian_user_id:      p.guardian_user_id      ?? null,
-          guardian_user_name:    p.guardian_user_name    ?? '',
-          guardian_name:         p.guardian_name         ?? null,
-          guardian_phone:        p.guardian_phone        ?? null,
-          guardian_relationship: p.guardian_relationship ?? null,
-        })
+        if (!isR4) {
+          const profileData: ProfileData = {
+            phone:                 p.phone                 ?? null,
+            birth_date:            p.birth_date            ?? null,
+            guardian_user_id:      p.guardian_user_id      ?? null,
+            guardian_user_name:    p.guardian_user_name    ?? '',
+            guardian_name:         p.guardian_name         ?? null,
+            guardian_phone:        p.guardian_phone        ?? null,
+            guardian_relationship: p.guardian_relationship ?? null,
+            photo_url:             p.photo_url             ?? null,
+          }
+          setProfile(profileData)
+          if (p.photo_url) {
+            const { data: signedData } = await supabase.storage
+              .from('member-photos')
+              .createSignedUrl(p.photo_url, 3600)
+            if (signedData?.signedUrl) setPhotoUrl(signedData.signedUrl)
+          }
+        }
         if (canViewHealth) {
           setHealth({
             emergency_name:  p.emergency_name  ?? null,
@@ -168,7 +217,7 @@ export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) 
         }
       }
     })
-  }, [socio.id, canFetchProfile, canViewHealth])
+  }, [socio.id, canFetchProfile, canViewHealth, isR4])
 
   const handlers: Record<string, () => void> = {
     editar:            () => setActiveModal('editar'),
@@ -215,14 +264,21 @@ export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) 
           <X size={16} />
         </button>
 
-        <div style={{
-          width: 52, height: 52, borderRadius: '50%',
-          background: 'var(--green-deep)', color: 'var(--green)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18, fontWeight: 900,
-          border: '2px solid rgba(143,188,143,0.2)',
-        }}>
-          {socio.iniciales}
+        <div
+          data-testid="member-detail-avatar"
+          style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: 'var(--green-deep)', color: 'var(--green)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, fontWeight: 900,
+            border: '2px solid rgba(143,188,143,0.2)',
+            overflow: 'hidden', flexShrink: 0,
+          }}
+        >
+          {photoUrl
+            ? <img src={photoUrl} alt={socio.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : socio.iniciales
+          }
         </div>
         <div>
           <p style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)' }}>{socio.nombre}</p>
@@ -309,6 +365,50 @@ export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) 
         ))}
       </div>
 
+      {/* Congelamiento — visible cuando el plan tiene cupo */}
+      {freezeQuota && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderBottom: '1px solid var(--border2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Snowflake size={11} style={{ color: '#6BA3E8' }} />
+            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--muted)' }}>
+              Congelamiento
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: 'var(--muted)' }}>Días disponibles</span>
+            <span
+              data-testid="member-freeze-quota"
+              style={{
+                fontSize: 11, fontWeight: 700,
+                color: freezeQuota.diasDisponibles > 0 ? 'var(--text)' : '#CC4444',
+              }}
+            >
+              {freezeQuota.diasDisponibles} de {freezeQuota.diasQuota}
+            </span>
+          </div>
+
+          {socio.status === 'CONGELADA' && freezeQuota.startDate && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)' }}>Desde</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#6BA3E8' }}>
+                  {fmtDate(freezeQuota.startDate)}
+                </span>
+              </div>
+              {freezeQuota.endDate && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>Retorno estimado</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#6BA3E8' }}>
+                    {fmtDate(freezeQuota.endDate)}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
       {/* Datos de salud — solo roles con acceso */}
       {canViewHealth && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderBottom: '1px solid var(--border2)' }}>
@@ -333,10 +433,10 @@ export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) 
         </div>
       )}
 
-      {/* Acciones — botón inteligente */}
+      {/* Acciones — ocultas para R4 (solo lectura) */}
+      {!isR4 && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
 
-        {/* Editar socio — siempre visible */}
         <button
           data-testid="member-action-btn"
           data-action="editar-socio"
@@ -373,6 +473,7 @@ export default function SocioDetail({ socio, user, onClose, onRefresh }: Props) 
           )
         })}
       </div>
+      )}
 
       {/* Modales */}
       {activeModal === 'pago' && (

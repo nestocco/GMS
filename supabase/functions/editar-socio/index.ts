@@ -1,9 +1,10 @@
 // supabase/functions/editar-socio/index.ts
 // Maneja dos acciones:
 //   action: 'get'    → devuelve el perfil completo del socio (con nombre del representante)
-//   action: 'update' → actualiza socio_profiles
+//                      R4_ENTRENADOR solo recibe campos de salud (no contacto/representante)
+//                      y solo puede acceder a socios de sus sucursales asignadas.
+//   action: 'update' → actualiza socio_profiles (R1/R2/R3 únicamente)
 // Usa service_role para bypassear RLS en ambos casos.
-// Roles permitidos: R1_DUENO, R2_ENCARGADO, R3_STAFF.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -13,8 +14,9 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ALLOWED_ROLES = ['R1_DUENO', 'R2_ENCARGADO', 'R3_STAFF']
-const HEALTH_ROLES  = ['R1_DUENO', 'R2_ENCARGADO']
+const GET_ROLES         = ['R1_DUENO', 'R2_ENCARGADO', 'R3_STAFF', 'R4_ENTRENADOR']
+const UPDATE_ROLES      = ['R1_DUENO', 'R2_ENCARGADO', 'R3_STAFF']
+const HEALTH_EDIT_ROLES = ['R1_DUENO', 'R2_ENCARGADO']
 
 function err(status: number, message: string) {
   return new Response(JSON.stringify({ ok: false, error: message }), {
@@ -55,31 +57,78 @@ Deno.serve(async (req) => {
       .eq('id', caller.id)
       .single()
 
-    if (!callerUser || !ALLOWED_ROLES.includes(callerUser.role)) {
-      return err(403, 'Sin permiso para operar sobre socios')
-    }
-
-    const body       = await req.json()
+    const body   = await req.json()
     const { action = 'update', socio_id } = body
 
     if (!socio_id) return err(400, 'socio_id requerido')
 
+    const isR4 = callerUser?.role === 'R4_ENTRENADOR'
+
+    if (!callerUser || !GET_ROLES.includes(callerUser.role)) {
+      return err(403, 'Sin permiso para operar sobre socios')
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
-    // GET — devuelve perfil completo con nombre del representante resuelto
+    // GET — devuelve perfil del socio
     // ─────────────────────────────────────────────────────────────────────────
     if (action === 'get') {
+      // R4: verificar que el socio pertenece a alguna de las sucursales del entrenador
+      if (isR4) {
+        const { data: assignments } = await admin
+          .from('staff_assignments')
+          .select('branch_id')
+          .eq('user_id', caller.id)
+          .eq('is_active', true)
+        const trainerBranches = (assignments ?? []).map((a: any) => a.branch_id)
+
+        const { data: membership } = await admin
+          .from('memberships')
+          .select('branch_id')
+          .eq('user_id', socio_id)
+          .in('status', ['ACTIVA', 'EN_GRACIA', 'IMPAGO', 'CONGELADA'])
+          .order('start_date', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (!membership || !trainerBranches.includes(membership.branch_id)) {
+          return err(403, 'Socio no pertenece a tus sucursales asignadas')
+        }
+      }
+
       const { data: profile, error: profileErr } = await admin
         .from('socio_profiles')
         .select(`
           first_name, last_name, dni, birth_date, phone, origin_channel,
           emergency_name, emergency_phone, medical_notes,
           guardian_user_id, guardian_name, guardian_dni,
-          guardian_phone, guardian_relationship
+          guardian_phone, guardian_relationship,
+          photo_url
         `)
         .eq('user_id', socio_id)
         .single()
 
       if (profileErr || !profile) return err(404, 'Perfil no encontrado')
+
+      // R4: registrar acceso a datos de salud en audit log
+      if (isR4) {
+        await admin.from('permission_audit_log').insert({
+          performed_by:   caller.id,
+          target_user_id: socio_id,
+          action:         'health_view',
+          entity:         'socio_profiles',
+        })
+
+        // Solo devolver campos de salud — datos de contacto/representante son R1/R2/R3
+        return ok({
+          profile: {
+            first_name:      profile.first_name,
+            last_name:       profile.last_name,
+            emergency_name:  profile.emergency_name,
+            emergency_phone: profile.emergency_phone,
+            medical_notes:   profile.medical_notes,
+          },
+        })
+      }
 
       // Resolver nombre del representante si es un socio del gym
       let guardian_user_name = ''
@@ -98,8 +147,28 @@ Deno.serve(async (req) => {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // UPDATE — actualiza socio_profiles
+    // UPDATE_PHOTO — actualiza solo photo_url (R1/R2/R3)
     // ─────────────────────────────────────────────────────────────────────────
+    if (action === 'update_photo') {
+      if (!UPDATE_ROLES.includes(callerUser.role)) {
+        return err(403, 'Sin permiso para editar socios')
+      }
+      const { photo_url } = body
+      const { error: updateErr } = await admin
+        .from('socio_profiles')
+        .update({ photo_url: photo_url ?? null })
+        .eq('user_id', socio_id)
+      if (updateErr) return err(500, updateErr.message)
+      return ok()
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // UPDATE — actualiza socio_profiles (R1/R2/R3 únicamente)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (!UPDATE_ROLES.includes(callerUser.role)) {
+      return err(403, 'Sin permiso para editar socios')
+    }
+
     const {
       first_name, last_name,
       dni, birth_date, phone, origin_channel,
@@ -111,7 +180,7 @@ Deno.serve(async (req) => {
     if (!first_name) return err(400, 'first_name requerido')
     if (!last_name)  return err(400, 'last_name requerido')
 
-    const canEditHealth = HEALTH_ROLES.includes(callerUser.role)
+    const canEditHealth = HEALTH_EDIT_ROLES.includes(callerUser.role)
 
     const patch: Record<string, unknown> = {
       first_name,

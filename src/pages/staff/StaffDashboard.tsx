@@ -8,6 +8,7 @@ import EmDesarrollo from '../../components/shared/EmDesarrollo'
 import Cobros      from '../cobros/Cobros'
 import Socios      from '../socios/Socios'
 import Prospectos  from '../prospectos/Prospectos'
+import Alertas     from '../alertas/Alertas'
 
 interface Props { user: AuthUser }
 
@@ -134,6 +135,8 @@ export default function StaffDashboard({ user }: Props) {
       return <EmDesarrollo seccion="POS e Inventario" descripcion="Terminal de venta rápida y gestión de stock en mostrador. GMS-116, GMS-121." />
     if (path.startsWith('/dashboard/acceso'))
       return <EmDesarrollo seccion="Control de Acceso" descripcion="Validación de QR dinámico y check-in manual. GMS-75." />
+    if (path.startsWith('/dashboard/alertas'))
+      return <Alertas user={user} />
     return <StaffHome user={user} />
   }
 

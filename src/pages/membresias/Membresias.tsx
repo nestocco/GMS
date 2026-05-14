@@ -1,9 +1,11 @@
 // src/pages/membresias/Membresias.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Plus } from 'lucide-react'
 import type { AuthUser } from '../../types'
 import PlanesList from '../../components/membresias/PlanesList'
 import PlanDetail from '../../components/membresias/PlanDetail'
 import MembresiasActivas from '../../components/membresias/MembresiasActivas'
+import NuevoPlanModal from '../../components/membresias/NuevoPlanModal'
 import { usePlanes } from '../../hooks/usePlanes'
 import { useMembresiasActivas } from '../../hooks/useMembresiasActivas'
 import type { Plan } from '../../types'
@@ -14,14 +16,21 @@ interface Props {
   user: AuthUser
 }
 
-export default function Membresias({ user: _user }: Props) {
-  const [tab, setTab] = useState<Tab>('activas')
+export default function Membresias({ user }: Props) {
+  const [tab, setTab]               = useState<Tab>('activas')
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [showNuevoPlan, setShowNuevoPlan] = useState(false)
 
-  const { planes, loading: loadingPlanes, error: errorPlanes } = usePlanes()
+  const { planes, loading: loadingPlanes, error: errorPlanes, reload } = usePlanes()
   const { membresias, loading: loadingMem, error: errorMem } = useMembresiasActivas()
 
-  // Mapear al shape que espera MembresiasActivas (campos del mock original)
+  // Sincronizar selectedPlan con datos frescos tras un reload
+  useEffect(() => {
+    if (!selectedPlan) return
+    const fresh = planes.find(p => p.id === selectedPlan.id)
+    if (fresh) setSelectedPlan(fresh)
+  }, [planes]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const membresiasParaVista = membresias.map(m => ({
     id: m.id,
     socio_nombre: m.socio,
@@ -45,6 +54,8 @@ export default function Membresias({ user: _user }: Props) {
     transition: 'all 0.15s',
   })
 
+  const isOwner = user.role === 'R1_DUENO'
+
   return (
     <div data-testid="memberships-page" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
 
@@ -57,13 +68,41 @@ export default function Membresias({ user: _user }: Props) {
         borderBottom: '1px solid var(--border2)',
       }}>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button data-testid="memberships-tab" data-tab="active" style={tabStyle('activas')} onClick={() => { setTab('activas'); setSelectedPlan(null) }}>
+          <button
+            data-testid="memberships-tab"
+            data-tab="active"
+            style={tabStyle('activas')}
+            onClick={() => { setTab('activas'); setSelectedPlan(null) }}
+          >
             Membresías activas
           </button>
-          <button data-testid="memberships-tab" data-tab="plans" style={tabStyle('planes')} onClick={() => { setTab('planes'); setSelectedPlan(null) }}>
+          <button
+            data-testid="memberships-tab"
+            data-tab="plans"
+            style={tabStyle('planes')}
+            onClick={() => { setTab('planes'); setSelectedPlan(null) }}
+          >
             Planes
           </button>
         </div>
+
+        {/* Botón nuevo plan — solo R1_DUENO y en el tab de planes */}
+        {tab === 'planes' && isOwner && (
+          <button
+            data-testid="plans-btn-new"
+            onClick={() => setShowNuevoPlan(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 14px', borderRadius: 8,
+              background: 'var(--green-deep)',
+              border: '1px solid var(--green)',
+              color: 'var(--green)', fontSize: 11, fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            <Plus size={13} /> Nuevo plan
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -86,39 +125,43 @@ export default function Membresias({ user: _user }: Props) {
               ? <ErrorState texto={errorPlanes} />
               : (
                 <>
-                  <PlanesList
-                    planes={planes}
-                    selectedId={selectedPlan?.id ?? null}
-                    onSelect={setSelectedPlan}
-                  />
-                  <aside style={{
-                    width: 320,
+                  <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
+                    <PlanesList
+                      planes={planes}
+                      selectedId={selectedPlan?.id ?? null}
+                      onSelect={p => setSelectedPlan(prev => prev?.id === p.id ? null : p)}
+                    />
+                  </div>
+                  <div style={{
+                    width: selectedPlan ? 320 : 0,
                     flexShrink: 0,
-                    background: 'var(--surface)',
-                    borderLeft: '1px solid var(--border2)',
+                    overflow: 'hidden',
+                    transition: 'width 0.2s ease',
+                    borderLeft: selectedPlan ? '1px solid var(--border2)' : 'none',
                   }}>
-                    {selectedPlan
-                      ? <PlanDetail plan={selectedPlan} onClose={() => setSelectedPlan(null)} />
-                      : (
-                        <div style={{
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexDirection: 'column',
-                          gap: 8,
-                        }}>
-                          <p style={{ fontSize: 12, color: 'var(--muted)' }}>Seleccioná un plan</p>
-                          <p style={{ fontSize: 10, color: 'var(--border2)' }}>para ver sus detalles</p>
-                        </div>
-                      )
-                    }
-                  </aside>
+                    {selectedPlan && (
+                      <PlanDetail
+                        plan={selectedPlan}
+                        role={user.role}
+                        onClose={() => setSelectedPlan(null)}
+                        onPlanUpdated={reload}
+                      />
+                    )}
+                  </div>
                 </>
               )
         )}
 
       </div>
+
+      {/* Modal nuevo plan */}
+      {showNuevoPlan && (
+        <NuevoPlanModal
+          onClose={() => setShowNuevoPlan(false)}
+          onSuccess={() => { setShowNuevoPlan(false); reload() }}
+        />
+      )}
+
     </div>
   )
 }

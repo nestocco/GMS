@@ -4,6 +4,7 @@ import type { AuthUser } from '../../types'
 import Sidebar from '../../components/shared/Sidebar'
 import Topbar  from '../../components/shared/Topbar'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
+import MisSocios from './MisSocios'
 
 interface Props { user: AuthUser }
 
@@ -96,7 +97,7 @@ export default function EntrenadorDashboard({ user }: Props) {
     if (path === '/dashboard' || path === '/dashboard/')
       return <EntrenadorHome user={user} />
     if (path.startsWith('/dashboard/socios'))
-      return <EmDesarrollo seccion="Mis Socios" descripcion="Fichas de socios asignados con condiciones médicas y objetivos. GMS-27." />
+      return <MisSocios user={user} />
     if (path.startsWith('/dashboard/progreso'))
       return <EmDesarrollo seccion="Progreso Físico" descripcion="Carga de métricas físicas (peso, % grasa, perímetros) en la ficha del socio. GMS-79, GMS-91." />
     if (path.startsWith('/dashboard/clases'))

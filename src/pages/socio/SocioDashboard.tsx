@@ -4,6 +4,7 @@ import type { AuthUser } from '../../types'
 import Sidebar from '../../components/shared/Sidebar'
 import Topbar  from '../../components/shared/Topbar'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
+import SocioMembresia from './SocioMembresia'
 
 interface Props { user: AuthUser }
 
@@ -111,7 +112,7 @@ export default function SocioDashboard({ user }: Props) {
     if (path.startsWith('/dashboard/acceso'))
       return <EmDesarrollo seccion="Mi Acceso QR" descripcion="Generación de token TOTP dinámico para ingreso al gimnasio. GMS-73, GMS-74." />
     if (path.startsWith('/dashboard/membresia'))
-      return <EmDesarrollo seccion="Membresía" descripcion="Estado de membresía, fechas, congelamiento y renovación. GMS-39." />
+      return <SocioMembresia user={user} />
     if (path.startsWith('/dashboard/progreso'))
       return <EmDesarrollo seccion="Mi Progreso" descripcion="Tablero cromático de evolución física. GMS-97, GMS-93." />
     if (path.startsWith('/dashboard/beneficios'))

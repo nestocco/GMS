@@ -1,0 +1,59 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main, qa]
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create e2e env file
+        run: |
+          cat > e2e/.env.e2e << 'EOF'
+          PLAYWRIGHT_BASE_URL=http://localhost:5173
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_DUENO_EMAIL=${{ secrets.E2E_DUENO_EMAIL }}
+          E2E_DUENO_PASSWORD=${{ secrets.E2E_DUENO_PASSWORD }}
+          E2E_ENCARGADO_EMAIL=${{ secrets.E2E_ENCARGADO_EMAIL }}
+          E2E_ENCARGADO_PASSWORD=${{ secrets.E2E_ENCARGADO_PASSWORD }}
+          E2E_STAFF_EMAIL=${{ secrets.E2E_STAFF_EMAIL }}
+          E2E_STAFF_PASSWORD=${{ secrets.E2E_STAFF_PASSWORD }}
+          E2E_ENTRENADOR_EMAIL=${{ secrets.E2E_ENTRENADOR_EMAIL }}
+          E2E_ENTRENADOR_PASSWORD=${{ secrets.E2E_ENTRENADOR_PASSWORD }}
+          E2E_SOCIO_EMAIL=${{ secrets.E2E_SOCIO_EMAIL }}
+          E2E_SOCIO_PASSWORD=${{ secrets.E2E_SOCIO_PASSWORD }}
+          EOF
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 14
