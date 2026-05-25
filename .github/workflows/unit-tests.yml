@@ -1,0 +1,37 @@
+name: Unit & Integration Tests
+
+on:
+  push:
+    branches: [main, qa, dev]
+  pull_request:
+    branches: [main, qa]
+
+jobs:
+  unit:
+    name: Vitest — Unit & Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit & integration tests
+        run: npm run test:unit
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: vitest-report
+          path: coverage/
+          retention-days: 7

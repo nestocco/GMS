@@ -2,43 +2,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { AuthUser } from '../types'
+import {
+  KEY_LOGIN_TS,
+  KEY_SESSION_HOURS,
+  KEY_INACTIVITY_MINUTES,
+  readCache,
+  writeCache,
+  clearCache,
+  isSoftExpired,
+  isInactivityExpired,
+} from '../lib/authUtils'
 
-// ─── Cache keys ───────────────────────────────────────────────────────────────
-const KEY_USER                 = 'gms:auth:user'
-const KEY_LOGIN_TS             = 'gms:auth:login_ts'
-export const KEY_SESSION_HOURS      = 'gms:config:session_hours'
-export const KEY_INACTIVITY_MINUTES = 'gms:config:inactivity_minutes'
-
-// ─── Cache helpers ────────────────────────────────────────────────────────────
-function readCache(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(KEY_USER)
-    return raw ? (JSON.parse(raw) as AuthUser) : null
-  } catch { return null }
-}
-
-function writeCache(user: AuthUser) {
-  localStorage.setItem(KEY_USER, JSON.stringify(user))
-}
-
-function clearCache() {
-  localStorage.removeItem(KEY_USER)
-  localStorage.removeItem(KEY_LOGIN_TS)
-}
-
-function isSoftExpired(): boolean {
-  const hours = Number(localStorage.getItem(KEY_SESSION_HOURS)) || 0
-  if (!hours) return false
-  const ts = Number(localStorage.getItem(KEY_LOGIN_TS)) || 0
-  if (!ts) return false
-  return (Date.now() - ts) / 3_600_000 > hours
-}
-
-function isInactivityExpired(lastActivityTs: number): boolean {
-  const minutes = Number(localStorage.getItem(KEY_INACTIVITY_MINUTES)) || 0
-  if (!minutes) return false
-  return (Date.now() - lastActivityTs) / 60_000 > minutes
-}
+export { KEY_SESSION_HOURS, KEY_INACTIVITY_MINUTES }
 
 // ─── fetchUser ────────────────────────────────────────────────────────────────
 async function fetchUser(userId: string): Promise<AuthUser | null> {
