@@ -25,6 +25,8 @@ export function useMembresiasActivas() {
           base_price,
           freeze_days_used,
           freeze_days_quota,
+          freeze_start_date,
+          freeze_end_date,
           cuota2_due_date,
           created_at,
           branches:branch_id (
@@ -91,6 +93,8 @@ export function useMembresiasActivas() {
           freezeDiasUsados: m.freeze_days_used,
           freezeDiasQuota: m.freeze_days_quota,
           cuota2Vence: formatDate(m.cuota2_due_date),
+          freezeStartDate: formatDate(m.freeze_start_date),
+          freezeEndDate: formatDate(m.freeze_end_date),
         }
       })
 

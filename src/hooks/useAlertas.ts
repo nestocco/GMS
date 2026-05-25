@@ -37,6 +37,7 @@ function toAlerta(a: any): Alerta {
     socio_dni:       socioDni,
     edge_device_id:  a.edge_device_id ?? null,
     accion_sugerida: ACCION_BY_TIPO[tipo] ?? 'Revisar el caso manualmente.',
+    metadata:        a.metadata ?? null,
     resolved_at:     a.resolved_at ?? null,
   }
 }
@@ -108,11 +109,15 @@ export function useAlertas() {
   }, [])
 
   const resolveAlerta = useCallback(async (id: string, userId: string) => {
+    const now = new Date().toISOString()
     const { error: err } = await supabase
       .from('alerts')
-      .update({ estado: 'RESUELTA', resolved_at: new Date().toISOString(), resolved_by: userId })
+      .update({ estado: 'RESUELTA', resolved_at: now, resolved_by: userId })
       .eq('id', id)
     if (err) throw err
+    setAlertas(prev => prev.map(a =>
+      a.id === id ? { ...a, estado: 'RESUELTA', resolved_at: now } : a
+    ))
   }, [])
 
   const ignoreAlerta = useCallback(async (id: string) => {
@@ -121,6 +126,9 @@ export function useAlertas() {
       .update({ estado: 'IGNORADA' })
       .eq('id', id)
     if (err) throw err
+    setAlertas(prev => prev.map(a =>
+      a.id === id ? { ...a, estado: 'IGNORADA' } : a
+    ))
   }, [])
 
   return { alertas, loading, error, resolveAlerta, ignoreAlerta }

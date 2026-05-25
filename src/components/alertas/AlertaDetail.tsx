@@ -1,6 +1,7 @@
 // src/components/alertas/AlertaDetail.tsx
 import { useState } from 'react'
-import { X, CheckCircle, EyeOff, AlertTriangle, Clock, MapPin, User } from 'lucide-react'
+import { X, CheckCircle, EyeOff, AlertTriangle, Clock, MapPin, User, Snowflake } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 import type { Alerta, AlertaTipo, AlertaSeveridad } from '../../types'
 
 const tipoConfig: Record<AlertaTipo, { label: string }> = {
@@ -26,9 +27,12 @@ interface Props {
 }
 
 export default function AlertaDetail({ alerta, userId, onClose, onResolve, onIgnore }: Props) {
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving]             = useState(false)
+  const [freezeApplying, setFreezeApplying] = useState(false)
+  const [freezeError, setFreezeError]   = useState<string | null>(null)
   const tipo = tipoConfig[alerta.tipo]
   const sev  = severidadConfig[alerta.severidad]
+  const meta = alerta.metadata as Record<string, any> | null
 
   async function handleResolve() {
     setSaving(true)
@@ -38,6 +42,33 @@ export default function AlertaDetail({ alerta, userId, onClose, onResolve, onIgn
   async function handleIgnore() {
     setSaving(true)
     try { await onIgnore(alerta.id) } finally { setSaving(false) }
+  }
+
+  async function handleApplyFreeze() {
+    if (!meta?.membership_id || !meta?.freeze_start_date || !meta?.freeze_days) {
+      setFreezeError('Faltan datos en la solicitud de congelamiento.')
+      return
+    }
+    setFreezeApplying(true)
+    setFreezeError(null)
+    try {
+      const { data, error } = await supabase.functions.invoke('gestionar-congelamiento', {
+        body: {
+          action:            'aplicar',
+          membership_id:     meta.membership_id,
+          freeze_start_date: meta.freeze_start_date,
+          freeze_days:       Number(meta.freeze_days),
+          reason:            meta.reason ?? '',
+        },
+      })
+      if (error || !data?.ok) {
+        setFreezeError(data?.error ?? error?.message ?? 'Error al aplicar congelamiento')
+        return
+      }
+      await onResolve(alerta.id, userId)
+    } finally {
+      setFreezeApplying(false)
+    }
   }
 
   return (
@@ -153,46 +184,103 @@ export default function AlertaDetail({ alerta, userId, onClose, onResolve, onIgn
           </div>
         )}
 
-        {/* Acción sugerida */}
-        <div style={{
-          background: 'var(--surface2)', border: '1px solid var(--border2)',
-          borderRadius: 10, padding: '14px 16px',
-        }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <AlertTriangle size={13} style={{ color: 'var(--muted)', marginTop: 1, flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', marginBottom: 4 }}>ACCIÓN SUGERIDA</p>
-              <p style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.6 }}>{alerta.accion_sugerida}</p>
+        {/* Panel de acción: congelamiento */}
+        {alerta.tipo === 'CONGELAMIENTO' && alerta.estado === 'PENDIENTE' && meta && (
+          <div data-testid="alert-freeze-panel" style={{
+            background: 'rgba(96,165,250,0.06)',
+            border: '1px solid rgba(96,165,250,0.22)',
+            borderRadius: 10, padding: '16px',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Snowflake size={12} style={{ color: '#60a5fa', flexShrink: 0 }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: 1 }}>
+                Solicitud de congelamiento
+              </span>
             </div>
-          </div>
-        </div>
 
-        {/* Acciones */}
-        {alerta.estado === 'PENDIENTE' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                { label: 'Inicio',       value: meta.freeze_start_date },
+                { label: 'Fin estimado', value: meta.freeze_end_date   },
+                { label: 'Días',         value: meta.freeze_days       },
+                { label: 'Plan',         value: meta.plan_nombre       },
+                ...(meta.reason ? [{ label: 'Motivo', value: meta.reason }] : []),
+              ].map(({ label, value }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: 'var(--muted)', flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>{String(value ?? '—')}</span>
+                </div>
+              ))}
+            </div>
+
+            {freezeError && (
+              <p style={{ fontSize: 11, color: '#f87171', margin: 0 }}>{freezeError}</p>
+            )}
+
             <button
-              data-testid="alert-detail-btn-resolve"
-              onClick={handleResolve}
-              disabled={saving}
+              data-testid="alert-detail-btn-apply-freeze"
+              onClick={handleApplyFreeze}
+              disabled={saving || freezeApplying}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                padding: '10px', borderRadius: 8, border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
-                background: 'var(--green-deep)', color: 'var(--green)', fontSize: 12, fontWeight: 700,
-                opacity: saving ? 0.6 : 1,
+                padding: '10px', borderRadius: 8, border: 'none',
+                cursor: (saving || freezeApplying) ? 'not-allowed' : 'pointer',
+                background: 'rgba(96,165,250,0.18)', color: '#60a5fa',
+                fontSize: 12, fontWeight: 700,
+                opacity: (saving || freezeApplying) ? 0.6 : 1,
               }}
             >
-              <CheckCircle size={13} /> {saving ? 'Guardando…' : 'Marcar como resuelta'}
+              <Snowflake size={13} />
+              {freezeApplying ? 'Aplicando…' : 'Aplicar congelamiento'}
             </button>
+          </div>
+        )}
+
+        {/* Acción sugerida (solo para tipos sin panel propio) */}
+        {alerta.tipo !== 'CONGELAMIENTO' && (
+          <div style={{
+            background: 'var(--surface2)', border: '1px solid var(--border2)',
+            borderRadius: 10, padding: '14px 16px',
+          }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              <AlertTriangle size={13} style={{ color: 'var(--muted)', marginTop: 1, flexShrink: 0 }} />
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', marginBottom: 4 }}>ACCIÓN SUGERIDA</p>
+                <p style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.6 }}>{alerta.accion_sugerida}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Acciones generales */}
+        {alerta.estado === 'PENDIENTE' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {alerta.tipo !== 'CONGELAMIENTO' && (
+              <button
+                data-testid="alert-detail-btn-resolve"
+                onClick={handleResolve}
+                disabled={saving}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '10px', borderRadius: 8, border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
+                  background: 'var(--green-deep)', color: 'var(--green)', fontSize: 12, fontWeight: 700,
+                  opacity: saving ? 0.6 : 1,
+                }}
+              >
+                <CheckCircle size={13} /> {saving ? 'Guardando…' : 'Marcar como resuelta'}
+              </button>
+            )}
             <button
               data-testid="alert-detail-btn-ignore"
               onClick={handleIgnore}
-              disabled={saving}
+              disabled={saving || freezeApplying}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                padding: '10px', borderRadius: 8, cursor: saving ? 'not-allowed' : 'pointer',
+                padding: '10px', borderRadius: 8, cursor: (saving || freezeApplying) ? 'not-allowed' : 'pointer',
                 fontSize: 12, fontWeight: 700,
                 background: 'transparent', border: '1px solid var(--border2)', color: 'var(--muted)',
-                opacity: saving ? 0.6 : 1,
+                opacity: (saving || freezeApplying) ? 0.6 : 1,
               }}
             >
               <EyeOff size={13} /> Ignorar alerta

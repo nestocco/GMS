@@ -1,3 +1,4 @@
+import { Snowflake } from 'lucide-react'
 import type { MembresiaActiva } from '../../types'
 
 const estadoConfig: Record<string, { label: string; color: string; bg: string }> = {
@@ -54,7 +55,17 @@ export default function MembresiasActivas({ membresias }: Props) {
                 <td style={{ padding: '12px', fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{m.plan}</td>
                 <td style={{ padding: '12px', fontSize: 12, color: 'var(--muted)' }}>{m.sede}</td>
                 <td style={{ padding: '12px', fontSize: 12, color: 'var(--muted)' }}>{m.inicio}</td>
-                <td style={{ padding: '12px', fontSize: 12, color: 'var(--muted)' }}>{m.vencimiento}</td>
+                <td style={{ padding: '12px', fontSize: 12, color: 'var(--muted)' }}>
+                  {m.vencimiento}
+                  {m.status === 'CONGELADA' && m.freezeStartDate && m.freezeEndDate && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                      <Snowflake size={10} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                      <span style={{ fontSize: 10, color: '#60a5fa' }}>
+                        {m.freezeStartDate} → {m.freezeEndDate}
+                      </span>
+                    </div>
+                  )}
+                </td>
                 <td style={{ padding: '12px' }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6,

@@ -82,6 +82,8 @@ export interface MembresiaActiva {
   freezeDiasUsados: number
   freezeDiasQuota: number
   cuota2Vence: string
+  freezeStartDate: string | null
+  freezeEndDate: string | null
 }
 
 // ─── Cobros ──────────────────────────────────────────────────────────────────
