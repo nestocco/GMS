@@ -1,0 +1,385 @@
+<svg width="1050" height="5758" xmlns="http://www.w3.org/2000/svg">
+<rect width="1050" height="5758" fill="#0F1410"/>
+<defs>
+  <filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  <marker id="a" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#8FBC8F"/></marker>
+  <marker id="ar" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#5A7060"/></marker>
+</defs>
+<g transform="translate(0,14)"><rect x="0" y="0" width="1050" height="806" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">1. Alta de Socio (incluye Alta de Membresía)</text>
+<line x1="58" y1="104" x2="58" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="73" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Personal</text>
+<text x="58" y="87" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">(R1/R2/R3)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">crear-socio</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Completa formulario de alta</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('crear-socio', { perfil, plan_id, monto })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() — verificar sesión</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">caller { id }</text>
+<line x1="682" y1="320" x2="990" y2="320" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="313" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT role FROM users WHERE id = caller.id  [admin]</text>
+<text x="687" y="334" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="990" y1="368" x2="682" y2="368" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="361" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role: "R3_STAFF"</text>
+<rect x="10" y="404" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="421" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role IN {R1,R2,R3}  →  continúa   |   else  →  403 Sin permiso</text>
+<line x1="682" y1="464" x2="990" y2="464" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="457" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">auth.admin.createUser(email, password_temp)</text>
+<text x="687" y="478" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="990" y1="512" x2="682" y2="512" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="505" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">new_user_id</text>
+<line x1="682" y1="560" x2="990" y2="560" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="553" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT users (role="R5_SOCIO") + INSERT socio_profiles</text>
+<text x="687" y="574" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">6.</text>
+<line x1="682" y1="608" x2="990" y2="608" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="601" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT memberships (status="ACTIVA", plan_id, start_date, end_date)</text>
+<text x="687" y="622" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">7.</text>
+<line x1="682" y1="656" x2="990" y2="656" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="649" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT payments (type="PAGO_TOTAL", monto)</text>
+<text x="687" y="670" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">8.</text>
+<line x1="678" y1="704" x2="371" y2="704" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="697" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true, socio_id, membership_id }</text>
+<line x1="367" y1="752" x2="60" y2="752" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="745" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Redirige al perfil del nuevo socio</text></g>
+<g transform="translate(0,834)"><rect x="0" y="0" width="1050" height="566" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">2. Editar Socio</text>
+<line x1="58" y1="104" x2="58" y2="552" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="552" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="552" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="552" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="73" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Personal</text>
+<text x="58" y="87" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">(R1/R2/R3)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">editar-socio</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Modifica campos del perfil</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('editar-socio', { action:'update', socio_id, ...campos })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role FROM users  [admin]</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">caller válido, role autorizado</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role IN {R1,R2,R3}  →  continúa   |   else  →  403</text>
+<line x1="682" y1="368" x2="990" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">UPDATE socio_profiles SET ... WHERE user_id = socio_id</text>
+<text x="687" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="990" y1="416" x2="682" y2="416" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="409" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">perfil actualizado</text>
+<line x1="678" y1="464" x2="371" y2="464" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="457" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true }</text>
+<line x1="367" y1="512" x2="60" y2="512" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="505" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Cambios guardados</text></g>
+<g transform="translate(0,1414)"><rect x="0" y="0" width="1050" height="710" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">3. Socio Solicita Congelamiento de Membresía</text>
+<line x1="58" y1="104" x2="58" y2="696" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="696" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="696" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="696" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="80" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Socio (R5)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">gestionar-mem</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Solicita freeze: ingresa fecha inicio y fin</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('congelar-membresia', { membership_id, freeze_start, freeze_end })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() — verificar sesión</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">caller.id = socio_id</text>
+<line x1="682" y1="320" x2="990" y2="320" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="313" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT * FROM memberships WHERE id = membership_id</text>
+<text x="687" y="334" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="990" y1="368" x2="682" y2="368" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="361" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">membership (verifica ownership y status)</text>
+<rect x="10" y="404" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="421" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  status=="ACTIVA" AND socio_id==caller.id  →  continúa   |   else  →  400/403</text>
+<line x1="682" y1="464" x2="990" y2="464" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="457" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">UPDATE memberships SET status="CONGELADA", freeze_start_date, freeze_end_date</text>
+<text x="687" y="478" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="682" y1="512" x2="990" y2="512" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="505" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT membership_state_log (old="ACTIVA", new="CONGELADA")</text>
+<text x="687" y="526" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">6.</text>
+<line x1="990" y1="560" x2="682" y2="560" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="553" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">ok</text>
+<line x1="678" y1="608" x2="371" y2="608" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="601" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true }</text>
+<line x1="367" y1="656" x2="60" y2="656" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="649" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Membresía congelada confirmada</text></g>
+<g transform="translate(0,2138)"><rect x="0" y="0" width="1050" height="614" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">4. Personal Aplica Congelamiento de Membresía</text>
+<line x1="58" y1="104" x2="58" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="73" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Personal</text>
+<text x="58" y="87" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">(R1/R2/R3)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">gestionar-mem</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Selecciona membresía e ingresa fechas de freeze</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('congelar-membresia', { membership_id, freeze_start, freeze_end })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role FROM users  [admin]</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role: "R3_STAFF"</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role IN {R1,R2,R3}  →  continúa   |   else  →  403</text>
+<line x1="682" y1="368" x2="990" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">UPDATE memberships SET status="CONGELADA", freeze_start_date, freeze_end_date</text>
+<text x="687" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="682" y1="416" x2="990" y2="416" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="409" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT membership_state_log (old=prev_status, new="CONGELADA", actor_id)</text>
+<text x="687" y="430" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="990" y1="464" x2="682" y2="464" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="457" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">ok</text>
+<line x1="678" y1="512" x2="371" y2="512" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="505" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true }</text>
+<line x1="367" y1="560" x2="60" y2="560" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="553" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Membresía congelada</text></g>
+<g transform="translate(0,2766)"><rect x="0" y="0" width="1050" height="614" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">5. Personal Cancela Membresía</text>
+<line x1="58" y1="104" x2="58" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="600" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="73" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Personal</text>
+<text x="58" y="87" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">(R1/R2/R3)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">gestionar-mem</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Selecciona membresía — confirma cancelación con motivo</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('cancelar-membresia', { membership_id, motivo })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role FROM users  [admin]</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role autorizado</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role IN {R1,R2,R3}  →  continúa   |   else  →  403</text>
+<line x1="682" y1="368" x2="990" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">UPDATE memberships SET status="CANCELADA", cancelled_at=NOW(), motivo</text>
+<text x="687" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="682" y1="416" x2="990" y2="416" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="409" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT membership_state_log (new="CANCELADA", actor_id)</text>
+<text x="687" y="430" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="990" y1="464" x2="682" y2="464" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="457" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">ok</text>
+<line x1="678" y1="512" x2="371" y2="512" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="505" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true }</text>
+<line x1="367" y1="560" x2="60" y2="560" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="553" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Membresía cancelada</text></g>
+<g transform="translate(0,3394)"><rect x="0" y="0" width="1050" height="758" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">6. Dueño Registra Nuevo Staff</text>
+<line x1="58" y1="104" x2="58" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="291" y1="104" x2="291" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="525" y1="104" x2="525" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="758" y1="104" x2="758" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="80" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Dueño (R1)</text>
+<rect x="232" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="291" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="466" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="525" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">crear-staff</text>
+<text x="525" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="699" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="758" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase</text>
+<text x="758" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Auth</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="289" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="174" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Completa form: nombre, email, rol, sucursal</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="293" y1="176" x2="523" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="408" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('crear-staff', { nombre, email, rol:'R3_STAFF' })</text>
+<text x="298" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="527" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role, can_manage_roles FROM users+claims  [admin]</text>
+<text x="532" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="527" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="758" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role:R1, can_manage_roles:true</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role==R1 AND can_manage_roles==true  →  continúa   |   else  →  403</text>
+<line x1="527" y1="368" x2="756" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="641" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">admin.auth.createUser(email, password_temp)</text>
+<text x="532" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="756" y1="416" x2="527" y2="416" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="641" y="409" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">new_user_id</text>
+<line x1="527" y1="464" x2="990" y2="464" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="457" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT users (id=new_user_id, role="R3_STAFF", nombre)</text>
+<text x="532" y="478" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="527" y1="512" x2="990" y2="512" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="505" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT claims FROM role_claims WHERE role = "R3_STAFF"</text>
+<text x="532" y="526" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">6.</text>
+<line x1="990" y1="560" x2="527" y2="560" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="758" y="553" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">default claims { can_register_payment:true, ... }</text>
+<line x1="527" y1="608" x2="990" y2="608" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="601" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">INSERT user_claims (user_id=new_user_id, ...default_claims)</text>
+<text x="532" y="622" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">7.</text>
+<line x1="523" y1="656" x2="293" y2="656" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="408" y="649" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok: true, staff_id }</text>
+<line x1="289" y1="704" x2="60" y2="704" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="174" y="697" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Staff registrado — credenciales enviadas por email</text></g>
+<g transform="translate(0,4166)"><rect x="0" y="0" width="1050" height="806" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">7. Dueño Exporta Base de Datos</text>
+<line x1="58" y1="104" x2="58" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="291" y1="104" x2="291" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="525" y1="104" x2="525" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="758" y1="104" x2="758" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="792" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="80" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Dueño (R1)</text>
+<rect x="232" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="291" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="466" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="525" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">exportar-bd</text>
+<text x="525" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="699" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="758" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Storage</text>
+<text x="992" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Bucket]</text>
+<line x1="60" y1="128" x2="289" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="174" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Selecciona tablas y rango de fechas — clic Exportar</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="293" y1="176" x2="523" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="408" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('exportar-bd', { tablas:[], desde, hasta, formato:'csv' })</text>
+<text x="298" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="527" y1="224" x2="756" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="641" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role, can_export_db FROM users+claims  [admin]</text>
+<text x="532" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="756" y1="272" x2="527" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="641" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role:R1, can_export_db:true</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  role==R1 AND can_export_db==true  →  continúa   |   else  →  403</text>
+<line x1="527" y1="368" x2="756" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="641" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT * FROM [tablas] WHERE fecha BETWEEN desde AND hasta</text>
+<text x="532" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="756" y1="416" x2="527" y2="416" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="641" y="409" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">datasets: users, memberships, payments, plans...</text>
+<path d="M525 457 L561 457 L561 471 L528 471" fill="none" stroke="#8FBC8F" stroke-width="1.3" marker-end="url(#a)"/>
+<text x="566" y="468" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10">Serializa datasets a CSV / empaqueta ZIP</text>
+<line x1="527" y1="512" x2="990" y2="512" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="505" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">storage.upload('exports/gms_{timestamp}.zip', data)</text>
+<text x="532" y="526" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="990" y1="560" x2="527" y2="560" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="758" y="553" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">file path en bucket</text>
+<line x1="527" y1="608" x2="990" y2="608" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="758" y="601" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">createSignedUrl(path, expiresIn: 300s)</text>
+<text x="532" y="622" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">6.</text>
+<line x1="990" y1="656" x2="527" y2="656" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="758" y="649" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">signed_url (válido 5 min)</text>
+<line x1="523" y1="704" x2="293" y2="704" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="408" y="697" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok:true, download_url, expires_in:300 }</text>
+<line x1="289" y1="752" x2="60" y2="752" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="174" y="745" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Botón Descargar activo (expira en 5 min)</text></g>
+<g transform="translate(0,4986)"><rect x="0" y="0" width="1050" height="758" fill="#141A14"/>
+<rect x="0" y="0" width="1050" height="46" fill="#2D5A27" opacity="0.4"/>
+<text x="525" y="28" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="13" font-weight="bold">8. Dueño Consulta Finanzas</text>
+<line x1="58" y1="104" x2="58" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="369" y1="104" x2="369" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="680" y1="104" x2="680" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<line x1="992" y1="104" x2="992" y2="744" stroke="#5A7060" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+<rect x="-1" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8FBC8F" stroke-width="1.5" filter="url(#sh)"/>
+<text x="58" y="80" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Dueño (R1)</text>
+<rect x="310" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="369" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">React UI</text>
+<rect x="621" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="680" y="73" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">finanzas</text>
+<text x="680" y="87" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">[Edge Fn]</text>
+<rect x="933" y="58" width="118" height="36" rx="6" fill="#1A221A" stroke="#8B9E8B" stroke-width="1.5" filter="url(#sh)"/>
+<text x="992" y="80" text-anchor="middle" fill="#8B9E8B" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5" font-weight="600">Supabase DB</text>
+<line x1="60" y1="128" x2="367" y2="128" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="213" y="121" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Abre módulo Finanzas — selecciona período</text>
+<text x="65" y="142" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">1.</text>
+<line x1="371" y1="176" x2="678" y2="176" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="524" y="169" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">invoke('consultar-finanzas', { desde, hasta })</text>
+<text x="376" y="190" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">2.</text>
+<line x1="682" y1="224" x2="990" y2="224" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="217" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">getUser() + SELECT role, can_view_financials FROM users+claims</text>
+<text x="687" y="238" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">3.</text>
+<line x1="990" y1="272" x2="682" y2="272" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="265" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">role:R1, can_view_financials:true</text>
+<rect x="10" y="308" width="1030" height="24" rx="4" fill="#1A221A" opacity="0.6" stroke="#5A7060" stroke-width="0.8" stroke-dasharray="4,3"/>
+<text x="20" y="325" fill="#C8956A" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" font-style="italic">[alt]  can_view_financials==true  →  continúa   |   else  →  403</text>
+<line x1="682" y1="368" x2="990" y2="368" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="361" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT SUM(monto), payment_type, date_trunc(month,fecha) FROM payments GROUP BY ...</text>
+<text x="687" y="382" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">4.</text>
+<line x1="990" y1="416" x2="682" y2="416" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="409" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">ingresos por mes y tipo de pago</text>
+<line x1="682" y1="464" x2="990" y2="464" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="457" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT status, COUNT(*) FROM memberships GROUP BY status</text>
+<text x="687" y="478" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">5.</text>
+<line x1="990" y1="512" x2="682" y2="512" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="505" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">distribución de estados de membresía</text>
+<line x1="682" y1="560" x2="990" y2="560" stroke="#8FBC8F" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="836" y="553" text-anchor="middle" fill="#8FBC8F" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">SELECT plan_id, COUNT(*) FROM memberships WHERE status=ACTIVA GROUP BY plan</text>
+<text x="687" y="574" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="9" opacity="0.6">6.</text>
+<line x1="990" y1="608" x2="682" y2="608" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="836" y="601" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">socios activos por plan</text>
+<line x1="678" y1="656" x2="371" y2="656" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="524" y="649" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">{ ok:true, ingresos:[], estados:{}, por_plan:{} }</text>
+<line x1="367" y1="704" x2="60" y2="704" stroke="#5A7060" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#ar)"/>
+<text x="213" y="697" text-anchor="middle" fill="#5A7060" font-family="Segoe UI,system-ui,sans-serif" font-size="10.5">Renderiza KPIs, gráficas y tabla de movimientos</text></g>
+</svg>

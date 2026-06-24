@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Estrategia de Testing & CI — GMS App</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #fff;
+  }
+
+  /* ── Portada ── */
+  .cover {
+    height: 100vh;
+    background: linear-gradient(145deg, #0F1410 0%, #1A221A 60%, #2D5A27 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 80px;
+    page-break-after: always;
+  }
+  .cover-badge {
+    background: rgba(143,188,143,0.15);
+    border: 1px solid rgba(143,188,143,0.3);
+    color: #8FBC8F;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 32px;
+  }
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #E8EDE8;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .cover h1 span { color: #8FBC8F; }
+  .cover-sub {
+    font-size: 16px;
+    color: #8B9E8B;
+    margin-bottom: 60px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+  }
+  .cover-meta-item label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #5A7060;
+    margin-bottom: 4px;
+  }
+  .cover-meta-item span {
+    font-size: 13px;
+    color: #8FBC8F;
+    font-weight: 600;
+  }
+
+  /* ── Layout general ── */
+  .page {
+    padding: 52px 64px;
+    max-width: 100%;
+  }
+
+  .section {
+    margin-bottom: 40px;
+    page-break-inside: avoid;
+  }
+
+  /* ── Títulos ── */
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-bottom: 3px solid #2D5A27;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2D5A27;
+    margin-bottom: 10px;
+    margin-top: 24px;
+  }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #444;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+  p {
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  /* ── Tablas ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 11px;
+  }
+  thead tr {
+    background: #1A221A;
+    color: #8FBC8F;
+  }
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  tbody tr:nth-child(even) { background: #f7faf7; }
+  tbody tr:hover { background: #eef5ee; }
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5eee5;
+    color: #333;
+    vertical-align: top;
+  }
+  tbody td:first-child { font-weight: 600; }
+
+  /* ── Badges / Pills ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge-unit      { background: rgba(45,90,39,0.12); color: #2D5A27; }
+  .badge-int       { background: rgba(59,130,246,0.12); color: #2563EB; }
+  .badge-e2e       { background: rgba(124,58,237,0.12); color: #7C3AED; }
+  .badge-ci        { background: rgba(217,119,6,0.12); color: #B45309; }
+  .badge-pass      { background: rgba(22,163,74,0.12); color: #16A34A; }
+  .badge-mock      { background: rgba(156,163,175,0.12); color: #4B5563; }
+
+  /* ── Code blocks ── */
+  pre {
+    background: #0F1410;
+    color: #8FBC8F;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    margin: 12px 0 20px;
+    overflow: hidden;
+    line-height: 1.7;
+  }
+  code {
+    background: rgba(45,90,39,0.1);
+    color: #2D5A27;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+  }
+  pre code {
+    background: transparent;
+    color: #8FBC8F;
+    padding: 0;
+  }
+
+  /* ── Cards de resumen ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    border: 1px solid #ddeedd;
+    border-radius: 10px;
+    padding: 16px 20px;
+    background: #f7faf7;
+  }
+  .kpi-card .number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2D5A27;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-card .label {
+    font-size: 11px;
+    color: #5A7060;
+    font-weight: 500;
+  }
+
+  /* ── Estructura de árbol ── */
+  .tree {
+    background: #0F1410;
+    color: #8FBC8F;
+    padding: 20px 24px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.9;
+    margin-bottom: 20px;
+  }
+  .tree .comment { color: #5A7060; }
+  .tree .new     { color: #C8956A; }
+  .tree .exists  { color: #8FBC8F; }
+
+  /* ── Lista de tests ── */
+  .test-list {
+    list-style: none;
+    margin: 8px 0 20px 0;
+  }
+  .test-list li {
+    padding: 5px 0 5px 20px;
+    border-bottom: 1px dashed #e5eee5;
+    font-size: 11px;
+    color: #333;
+    position: relative;
+  }
+  .test-list li:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #2D5A27;
+    font-weight: 700;
+  }
+  .test-list li:last-child { border-bottom: none; }
+
+  /* ── Diagrama de flujo ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0 24px;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    background: #1A221A;
+    border: 1px solid rgba(143,188,143,0.2);
+    color: #E8EDE8;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .flow-box small {
+    display: block;
+    color: #5A7060;
+    font-size: 10px;
+    margin-top: 2px;
+  }
+  .flow-arrow {
+    color: #2D5A27;
+    font-size: 18px;
+    padding: 0 8px;
+    font-weight: 700;
+  }
+
+  /* ── Callout ── */
+  .callout {
+    border-left: 4px solid #2D5A27;
+    background: rgba(45,90,39,0.06);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0 20px;
+    font-size: 11px;
+    color: #333;
+  }
+  .callout strong { color: #2D5A27; }
+
+  /* ── Page break ── */
+  .break { page-break-before: always; }
+
+  /* ── Header de página (excepto portada) ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ddeedd;
+    margin-bottom: 32px;
+  }
+  .page-header .title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2D5A27;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .page-header .date {
+    font-size: 10px;
+    color: #8B9E8B;
+  }
+
+  /* ── Footer ── */
+  .page-footer {
+    border-top: 1px solid #ddeedd;
+    padding-top: 10px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #8B9E8B;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PORTADA
+══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">GMS · Gym Management System</div>
+  <h1>Estrategia de Testing<br><span>&amp; Integración Continua</span></h1>
+  <p class="cover-sub">Documentación técnica de pruebas unitarias, de integración,<br>E2E y configuración de CI con GitHub Actions</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <label>Fecha</label>
+      <span>Mayo 2026</span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Rama</label>
+      <span>dev → main</span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Test Runner</label>
+      <span>Vitest 4 + Playwright</span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Total Tests</label>
+      <span>65 unit + E2E</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 1 — RESUMEN EJECUTIVO
+══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>1. Resumen Ejecutivo</h2>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="number">65</div>
+      <div class="label">Tests unitarios<br>&amp; de integración</div>
+    </div>
+    <div class="kpi-card">
+      <div class="number">7</div>
+      <div class="label">Archivos de test<br>(unit + integration)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="number">~1.4s</div>
+      <div class="label">Tiempo de ejecución<br>tests unitarios</div>
+    </div>
+    <div class="kpi-card">
+      <div class="number">2</div>
+      <div class="label">Workflows de CI<br>GitHub Actions</div>
+    </div>
+  </div>
+
+  <p>La estrategia de testing del proyecto GMS está organizada en tres capas independientes que cubren distintos niveles de la aplicación. Cada capa tiene su propia herramienta, su propio entorno de ejecución y su propio rol dentro del pipeline de CI/CD.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Capa</th>
+        <th>Tipo</th>
+        <th>Herramienta</th>
+        <th>Entorno</th>
+        <th>Tests</th>
+        <th>Tiempo aprox.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Funciones puras</td>
+        <td><span class="badge badge-unit">Unitario</span></td>
+        <td>Vitest 4</td>
+        <td>Sin dependencias externas</td>
+        <td>48</td>
+        <td>~0.5s</td>
+      </tr>
+      <tr>
+        <td>Hooks React</td>
+        <td><span class="badge badge-int">Integración</span></td>
+        <td>Vitest + Testing Library</td>
+        <td>Supabase mockeado</td>
+        <td>17</td>
+        <td>~1s</td>
+      </tr>
+      <tr>
+        <td>Flujos de usuario</td>
+        <td><span class="badge badge-e2e">E2E</span></td>
+        <td>Playwright</td>
+        <td>App + Supabase real</td>
+        <td>En expansión</td>
+        <td>~5-10min</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2. Pirámide de Testing</h2>
+
+  <p>La distribución de tests sigue la pirámide clásica: muchos tests rápidos y baratos en la base, pocos tests lentos y costosos en la cima. Esto garantiza feedback rápido en desarrollo sin sacrificar cobertura real de los flujos críticos.</p>
+
+  <div style="text-align:center; margin: 24px 0; font-family: 'Courier New', monospace; font-size: 12px; line-height: 2;">
+    <div style="margin: 0 auto; display: inline-block; text-align: center;">
+      <div style="background:#7C3AED;color:#fff;padding:10px 40px;border-radius:8px 8px 0 0;font-size:11px;">E2E (Playwright) — Flujos reales de usuario</div>
+      <div style="background:#2563EB;color:#fff;padding:10px 80px;font-size:11px;">Integración — Hooks con Supabase mockeado</div>
+      <div style="background:#2D5A27;color:#fff;padding:10px 140px;border-radius:0 0 8px 8px;font-size:11px;">Unitarios — Funciones puras, sin dependencias</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Principio central:</strong> los tests de integración y unitarios no requieren ninguna credencial, servidor ni variable de entorno. Todo lo que depende de Supabase está reemplazado por mocks, lo que permite ejecutarlos en cualquier entorno —incluyendo CI— de forma completamente autónoma.
+  </div>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 1</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 2 — ESTRUCTURA DE ARCHIVOS
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>3. Estructura de Archivos</h2>
+
+  <p>Los tests unitarios y de integración están colocados junto a los archivos fuente que prueban (<em>colocated tests</em>). Los tests E2E viven en su propio directorio separado.</p>
+
+  <div class="tree">
+gms-app/<br>
+├── <span class="new">.github/workflows/</span><br>
+│   ├── <span class="new">unit-tests.yml</span>       <span class="comment">← CI: tests unitarios (nuevo)</span><br>
+│   └── <span class="exists">e2e.yml</span>              <span class="comment">← CI: tests E2E (existente)</span><br>
+│<br>
+├── <span class="new">vitest.config.ts</span>          <span class="comment">← Configuración del runner (nuevo)</span><br>
+│<br>
+├── src/<br>
+│   ├── <span class="new">tests/setup.ts</span>        <span class="comment">← Setup global: jest-dom (nuevo)</span><br>
+│   │<br>
+│   ├── lib/<br>
+│   │   ├── <span class="new">authUtils.ts</span>      <span class="comment">← Funciones puras extraídas de useAuth (nuevo)</span><br>
+│   │   ├── <span class="new">authUtils.test.ts</span> <span class="comment">← 15 tests unitarios (nuevo)</span><br>
+│   │   ├── <span class="new">sociosUtils.ts</span>    <span class="comment">← Funciones puras extraídas de useSocios (nuevo)</span><br>
+│   │   ├── <span class="new">sociosUtils.test.ts</span> <span class="comment">← 19 tests unitarios (nuevo)</span><br>
+│   │   ├── discountCalc.ts     <span class="comment">← existente</span><br>
+│   │   ├── <span class="new">discountCalc.test.ts</span> <span class="comment">← 11 tests unitarios (nuevo)</span><br>
+│   │   ├── freezeCalc.ts       <span class="comment">← existente</span><br>
+│   │   └── freezeCalc.test.ts  <span class="comment">← 3 tests unitarios (existente)</span><br>
+│   │<br>
+│   └── hooks/<br>
+│       ├── useAuth.ts          <span class="comment">← refactorizado: importa de authUtils</span><br>
+│       ├── <span class="new">useAuth.test.ts</span>   <span class="comment">← 6 tests de integración (nuevo)</span><br>
+│       ├── useSocios.ts        <span class="comment">← refactorizado: importa de sociosUtils</span><br>
+│       ├── <span class="new">useSocios.test.ts</span> <span class="comment">← 6 tests de integración (nuevo)</span><br>
+│       ├── useAltaSocio.ts     <span class="comment">← existente</span><br>
+│       └── <span class="new">useAltaSocio.test.ts</span> <span class="comment">← 5 tests de integración (nuevo)</span><br>
+│<br>
+└── e2e/                        <span class="comment">← Playwright (separado, existente)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── tests/auth/login.spec.ts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── tests/socios/nuevo-socio.spec.ts
+  </div>
+
+  <h3>Refactoring realizado para habilitar tests</h3>
+  <p>Las funciones puras que existían como closures dentro de los hooks fueron extraídas a archivos de librería independientes. Esto no cambia el comportamiento de la aplicación, pero permite probarlas de forma aislada sin necesidad de montar el hook completo.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Función</th>
+        <th>Origen (antes)</th>
+        <th>Destino (ahora)</th>
+        <th>Exportada</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>readCache()</td><td>useAuth.ts (privada)</td><td>authUtils.ts</td><td>✓</td></tr>
+      <tr><td>writeCache()</td><td>useAuth.ts (privada)</td><td>authUtils.ts</td><td>✓</td></tr>
+      <tr><td>clearCache()</td><td>useAuth.ts (privada)</td><td>authUtils.ts</td><td>✓</td></tr>
+      <tr><td>isSoftExpired()</td><td>useAuth.ts (privada)</td><td>authUtils.ts</td><td>✓</td></tr>
+      <tr><td>isInactivityExpired()</td><td>useAuth.ts (privada)</td><td>authUtils.ts</td><td>✓</td></tr>
+      <tr><td>resolveStatus()</td><td>useSocios.ts (closure)</td><td>sociosUtils.ts</td><td>✓</td></tr>
+      <tr><td>calcDiasRestantes()</td><td>useSocios.ts (closure)</td><td>sociosUtils.ts</td><td>✓</td></tr>
+      <tr><td>calcHasDeuda()</td><td>useSocios.ts (closure)</td><td>sociosUtils.ts</td><td>✓</td></tr>
+      <tr><td>buildInitials()</td><td>useSocios.ts (closure)</td><td>sociosUtils.ts</td><td>✓</td></tr>
+      <tr><td>formatDateAR()</td><td>useSocios.ts (closure)</td><td>sociosUtils.ts</td><td>✓</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 2</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 3 — TESTS UNITARIOS
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>4. Tests Unitarios</h2>
+
+  <p>Los tests unitarios prueban funciones puras de forma completamente aislada. No requieren mocks, no montan componentes React, no conectan a ningún servicio externo. Dado un input, validan el output esperado.</p>
+
+  <h3>4.1 authUtils.test.ts — 15 tests</h3>
+  <p>Cubre todas las funciones de caché de sesión y verificación de expiración.</p>
+
+  <table>
+    <thead><tr><th>Suite</th><th>Test</th><th>Qué verifica</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3">readCache</td><td>retorna null sin caché</td><td>localStorage vacío → null</td></tr>
+      <tr><td>retorna usuario con JSON válido</td><td>deserialización correcta</td></tr>
+      <tr><td>retorna null con JSON corrupto</td><td>manejo silencioso de errores</td></tr>
+      <tr><td rowspan="2">writeCache / clearCache</td><td>writeCache persiste y readCache recupera</td><td>ciclo completo de caché</td></tr>
+      <tr><td>clearCache elimina usuario y login_ts</td><td>limpieza total de localStorage</td></tr>
+      <tr><td rowspan="4">isSoftExpired</td><td>false sin límite configurado</td><td>caso base: sin configuración</td></tr>
+      <tr><td>false dentro del límite de horas</td><td>sesión vigente</td></tr>
+      <tr><td>true cuando superó el límite</td><td>sesión expirada</td></tr>
+      <tr><td>false sin login_ts guardado</td><td>caso de primer login</td></tr>
+      <tr><td rowspan="3">isInactivityExpired</td><td>false sin límite configurado</td><td>caso base: sin configuración</td></tr>
+      <tr><td>false dentro del límite</td><td>usuario activo recientemente</td></tr>
+      <tr><td>true cuando superó el límite</td><td>inactividad prolongada</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 sociosUtils.test.ts — 19 tests</h3>
+
+  <table>
+    <thead><tr><th>Suite</th><th>Test</th><th>Qué verifica</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="5">resolveStatus</td><td>CANCELADA sin membresía</td><td>null → CANCELADA</td></tr>
+      <tr><td>ACTIVA con vencimiento futuro</td><td>status se respeta</td></tr>
+      <tr><td>EN_GRACIA cuando end_date ya pasó</td><td>fallback hasta que el proceso BD actualice</td></tr>
+      <tr><td>CONGELADA sin importar fecha</td><td>status explícito prevalece</td></tr>
+      <tr><td>IMPAGO directo desde status</td><td>pass-through de status almacenado</td></tr>
+      <tr><td rowspan="4">calcDiasRestantes</td><td>-1 sin membresía</td><td>caso nulo</td></tr>
+      <tr><td>-1 sin end_date</td><td>membresía sin fecha de vencimiento</td></tr>
+      <tr><td>0 cuando ya venció</td><td>no retorna negativos</td></tr>
+      <tr><td>días aproximados con vencimiento futuro</td><td>cálculo matemático correcto</td></tr>
+      <tr><td rowspan="5">calcHasDeuda</td><td>false sin membresía</td><td>caso nulo</td></tr>
+      <tr><td>false sin pagos</td><td>membresía nueva sin cobrar</td></tr>
+      <tr><td>false con PAGO_TOTAL</td><td>pago completo no genera deuda</td></tr>
+      <tr><td>true con CUOTA_1 sin CUOTA_2</td><td>deuda real detectada</td></tr>
+      <tr><td>false con CUOTA_1 y CUOTA_2</td><td>deuda saldada</td></tr>
+      <tr><td rowspan="3">buildInitials</td><td>JP de "Juan Pérez"</td><td>dos palabras</td></tr>
+      <tr><td>A de "Admin"</td><td>una sola palabra</td></tr>
+      <tr><td>ME de "María Elena Torres"</td><td>ignora tercera palabra</td></tr>
+      <tr><td rowspan="2">formatDateAR</td><td>"—" cuando fecha es null</td><td>valor centinela</td></tr>
+      <tr><td>DD/MM/YYYY en locale es-AR</td><td>formato regional correcto</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.3 discountCalc.test.ts — 11 tests</h3>
+
+  <table>
+    <thead><tr><th>Suite</th><th>Test</th><th>Qué verifica</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3">Factor continuidad</td><td>0% con menos de 91 días</td><td>socio nuevo sin descuento</td></tr>
+      <tr><td>40% del alloc entre 91 y 364 días</td><td>descuento parcial</td></tr>
+      <tr><td>100% del alloc con 365+ días</td><td>descuento máximo por fidelidad</td></tr>
+      <tr><td rowspan="3">Factor volumen</td><td>0% con plan menor a 90 días</td><td>sin beneficio por plan corto</td></tr>
+      <tr><td>40% del alloc entre 90 y 179 días</td><td>descuento parcial</td></tr>
+      <tr><td>100% del alloc con 180+ días</td><td>descuento máximo por plan largo</td></tr>
+      <tr><td rowspan="3">Factor nivel</td><td>0% para BASICO</td><td>plan básico sin bonus</td></tr>
+      <tr><td>40% para SILVER y GOLD</td><td>descuento intermedio</td></tr>
+      <tr><td>100% para VIP y PREMIUM</td><td>descuento máximo</td></tr>
+      <tr><td rowspan="2">Cap máximo</td><td>final nunca supera discount_cap</td><td>techo de descuento respetado</td></tr>
+      <tr><td>capped=false cuando no supera</td><td>flag correcto</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.4 freezeCalc.test.ts — 3 tests (preexistente)</h3>
+  <ul class="test-list">
+    <li>Descongelamiento el mismo día → 0 días usados, end_date vuelve al original</li>
+    <li>Descongelamiento anticipado (7 de 14 días) → end_date = original + 7</li>
+    <li>Descongelamiento tardío → cap en freeze_days, end_date sin cambio</li>
+  </ul>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 3</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 4 — TESTS DE INTEGRACIÓN
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>5. Tests de Integración</h2>
+
+  <p>Los tests de integración prueban los hooks de React junto con su lógica interna, pero reemplazan las llamadas reales a Supabase con funciones simuladas (<em>mocks</em>). Esto permite verificar que los hooks responden correctamente a cada escenario sin necesidad de una base de datos real.</p>
+
+  <div class="callout">
+    <strong>Estrategia de mock:</strong> se utiliza <code>vi.mock('../lib/supabase', ...)</code> para reemplazar el cliente de Supabase por completo. Las funciones del mock se declaran con <code>vi.hoisted()</code> para garantizar que estén disponibles en el momento en que Vitest hace el hoisting de <code>vi.mock</code> al inicio del archivo.
+  </div>
+
+  <h3>5.1 useAuth.test.ts — 6 tests</h3>
+  <p>Módulos mockeados: <code>supabase.auth.onAuthStateChange</code>, <code>supabase.auth.signOut</code>, <code>supabase.auth.getSession</code>, <code>supabase.from</code></p>
+
+  <table>
+    <thead><tr><th>Test</th><th>Escenario</th><th>Verifica</th></tr></thead>
+    <tbody>
+      <tr><td>Estado inicial sin caché</td><td>localStorage vacío al montar</td><td>loading=true, user=null</td></tr>
+      <tr><td>Estado inicial con caché</td><td>usuario serializado en localStorage</td><td>loading=false, user hidratado</td></tr>
+      <tr><td>Evento SIGNED_IN exitoso</td><td>Supabase retorna datos de usuario</td><td>user seteado, loading=false</td></tr>
+      <tr><td>Evento SIGNED_OUT</td><td>sesión cerrada</td><td>user=null, caché limpiado</td></tr>
+      <tr><td>Sesión vacía en INITIAL_SESSION</td><td>sin usuario en la sesión</td><td>user=null, loading=false</td></tr>
+      <tr><td>Soft-timeout en INITIAL_SESSION</td><td>login_ts indica sesión expirada</td><td>signOut() llamado 1 vez</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.2 useSocios.test.ts — 6 tests</h3>
+  <p>Módulo mockeado: <code>supabase.from('users').select().eq().order()</code></p>
+
+  <table>
+    <thead><tr><th>Test</th><th>Escenario</th><th>Verifica</th></tr></thead>
+    <tbody>
+      <tr><td>Estado inicial</td><td>al montar antes de recibir datos</td><td>loading=true, socios=[]</td></tr>
+      <tr><td>Transformación completa</td><td>socio con membresía activa y PAGO_TOTAL</td><td>nombre, iniciales, status, plan, sede, diasRestantes, hasDeuda=false</td></tr>
+      <tr><td>Deuda detectada</td><td>solo CUOTA_1 sin CUOTA_2</td><td>hasDeuda=true</td></tr>
+      <tr><td>Sin perfil (solo email)</td><td>socio_profiles es null</td><td>nombre = email</td></tr>
+      <tr><td>Sin membresías</td><td>memberships=[]</td><td>status=CANCELADA, membershipId=null</td></tr>
+      <tr><td>Error de Supabase</td><td>query retorna error</td><td>error seteado, socios=[]</td></tr>
+      <tr><td>Membresía más reciente</td><td>múltiples membresías con fechas distintas</td><td>se selecciona la de start_date más reciente</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.3 useAltaSocio.test.ts — 5 tests</h3>
+  <p>Módulo mockeado: <code>supabase.functions.invoke('crear-socio', ...)</code></p>
+
+  <table>
+    <thead><tr><th>Test</th><th>Escenario</th><th>Verifica</th></tr></thead>
+    <tbody>
+      <tr><td>Estado inicial</td><td>hook recién montado</td><td>loading=false, error=null</td></tr>
+      <tr><td>Alta exitosa</td><td>edge function retorna ok:true + user_id</td><td>retorna userId, loading=false, error=null</td></tr>
+      <tr><td>Error de negocio</td><td>edge function retorna ok:false</td><td>retorna null, error seteado con mensaje</td></tr>
+      <tr><td>Error de red</td><td>invoke retorna error de transporte</td><td>retorna null, error seteado</td></tr>
+      <tr><td>resetError</td><td>luego de un error previo</td><td>error=null</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 4</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 5 — TESTS E2E
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>6. Tests E2E con Playwright</h2>
+
+  <p>Los tests End-to-End simulan el comportamiento real de un usuario en el navegador, interactuando con la interfaz gráfica y la base de datos de Supabase en un ambiente real. Son los más lentos pero los que mayor confianza dan sobre el funcionamiento completo del sistema.</p>
+
+  <h3>6.1 Estructura del proyecto E2E</h3>
+
+  <div class="tree">
+e2e/<br>
+├── playwright.config.ts           <span class="comment">← configuración base</span><br>
+├── .env.e2e                        <span class="comment">← variables de entorno (gitignored)</span><br>
+├── .auth/                          <span class="comment">← estados de sesión por rol</span><br>
+│   ├── dueno.json<br>
+│   ├── encargado.json<br>
+│   ├── staff.json<br>
+│   ├── entrenador.json<br>
+│   └── socio.json<br>
+├── fixtures/index.ts               <span class="comment">← fixtures globales</span><br>
+├── helpers/<br>
+│   ├── auth.ts                     <span class="comment">← helper de autenticación</span><br>
+│   └── supabase.ts                 <span class="comment">← helper de base de datos</span><br>
+├── pages/                          <span class="comment">← Page Object Model</span><br>
+│   ├── LoginPage.ts<br>
+│   ├── SociosPage.ts<br>
+│   └── NuevoSocioWizardPage.ts<br>
+└── tests/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── auth/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│   └── login.spec.ts             <span class="comment">← flujos de autenticación</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── socios/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── nuevo-socio.spec.ts       <span class="comment">← alta de socios</span><br>
+  </div>
+
+  <h3>6.2 Patrón de autenticación</h3>
+  <p>Los tests E2E utilizan <strong>storage state</strong> de Playwright para reutilizar sesiones autenticadas entre tests. Cada rol del sistema tiene su propio archivo de estado guardado, evitando el login en cada test individual.</p>
+
+  <table>
+    <thead><tr><th>Archivo</th><th>Rol</th><th>Permisos relevantes</th></tr></thead>
+    <tbody>
+      <tr><td>dueno.json</td><td>R1_DUENO</td><td>Acceso total al sistema</td></tr>
+      <tr><td>encargado.json</td><td>R2_ENCARGADO</td><td>Operaciones + finanzas</td></tr>
+      <tr><td>staff.json</td><td>R3_STAFF</td><td>Cobros y alta de socios</td></tr>
+      <tr><td>entrenador.json</td><td>R4_ENTRENADOR</td><td>Solo lectura de socios asignados</td></tr>
+      <tr><td>socio.json</td><td>R5_SOCIO</td><td>Solo sus propios datos</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 Convención data-testid</h3>
+  <p>Todos los elementos interactivos del UI tienen atributos <code>data-testid</code> que los tests E2E usan para seleccionar elementos de forma estable y desacoplada del CSS.</p>
+
+  <table>
+    <thead><tr><th>Módulo</th><th>Prefijo</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Autenticación</td><td><code>login-</code></td><td>login-input-email, login-btn-submit</td></tr>
+      <tr><td>Socios</td><td><code>members-</code></td><td>members-list, members-btn-new</td></tr>
+      <tr><td>Membresías</td><td><code>memberships-</code></td><td>memberships-page, memberships-table</td></tr>
+      <tr><td>Cobros</td><td><code>payments-</code></td><td>payments-table, payments-table-row</td></tr>
+      <tr><td>Wizard nuevo socio</td><td><code>wizard-</code></td><td>wizard-step-profile, wizard-input-firstname</td></tr>
+      <tr><td>Alertas</td><td><code>alerts-</code></td><td>alerts-list, alerts-list-item</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 5</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 6 — CI / GITHUB ACTIONS
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>7. Integración Continua — GitHub Actions</h2>
+
+  <p>El repositorio tiene dos workflows independientes, cada uno optimizado para su tipo de test.</p>
+
+  <h3>7.1 unit-tests.yml — Tests unitarios e integración</h3>
+
+  <div class="callout">
+    <strong>Característica clave:</strong> este workflow no requiere ningún secret, ninguna variable de entorno ni conexión a servicios externos. Es completamente autónomo.
+  </div>
+
+  <table>
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Archivo</td><td><code>.github/workflows/unit-tests.yml</code></td></tr>
+      <tr><td>Runner</td><td>ubuntu-latest</td></tr>
+      <tr><td>Timeout</td><td>10 minutos</td></tr>
+      <tr><td>Secrets requeridos</td><td>Ninguno</td></tr>
+      <tr><td>Node version</td><td>20</td></tr>
+      <tr><td>Tiempo estimado</td><td>~30 segundos</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Disparadores</h4>
+  <table>
+    <thead><tr><th>Evento</th><th>Ramas</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>push</td><td>main, qa, dev</td><td>Corre siempre</td></tr>
+      <tr><td>pull_request</td><td>main, qa</td><td>Bloquea merge si falla</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Pasos del workflow</h4>
+  <pre>1. actions/checkout@v4       → clonar el repositorio
+2. actions/setup-node@v4     → instalar Node 20 con caché de npm
+3. npm ci                    → instalar dependencias del package-lock.json
+4. npm run test:unit         → vitest run (65 tests, ~1.4s)
+5. upload-artifact@v4        → subir coverage/ si el job falla</pre>
+
+  <h3>7.2 e2e.yml — Tests E2E</h3>
+
+  <table>
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Archivo</td><td><code>.github/workflows/e2e.yml</code></td></tr>
+      <tr><td>Runner</td><td>ubuntu-latest</td></tr>
+      <tr><td>Timeout</td><td>30 minutos</td></tr>
+      <tr><td>Secrets requeridos</td><td>VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY + credenciales por rol</td></tr>
+      <tr><td>Browser instalado</td><td>Chromium</td></tr>
+      <tr><td>Tiempo estimado</td><td>5–10 minutos</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Disparadores</h4>
+  <table>
+    <thead><tr><th>Evento</th><th>Ramas</th></tr></thead>
+    <tbody>
+      <tr><td>push</td><td>main</td></tr>
+      <tr><td>pull_request</td><td>main, qa</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.3 Flujo completo por evento</h3>
+
+  <h4>Push a dev</h4>
+  <div class="flow">
+    <div class="flow-box">push a dev</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">unit-tests<br><small>~30s ✅</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">e2e<br><small>no corre</small></div>
+  </div>
+
+  <h4>Pull Request hacia main o qa</h4>
+  <div class="flow">
+    <div class="flow-box">PR abierta</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">unit-tests<br><small>~30s</small></div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box">e2e tests<br><small>~5-10min</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">merge habilitado<br><small>solo si ambos ✅</small></div>
+  </div>
+
+  <h4>Push directo a main</h4>
+  <div class="flow">
+    <div class="flow-box">push a main</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">unit-tests<br><small>~30s</small></div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box">e2e tests<br><small>~5-10min</small></div>
+  </div>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 6</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PÁGINA 7 — COMANDOS Y CONFIGURACIÓN
+══════════════════════════════════════════════════════════════ -->
+<div class="page break">
+  <div class="page-header">
+    <span class="title">GMS · Estrategia de Testing &amp; CI</span>
+    <span class="date">Mayo 2026</span>
+  </div>
+
+  <h2>8. Comandos de Ejecución</h2>
+
+  <table>
+    <thead><tr><th>Comando</th><th>Descripción</th><th>Cuándo usarlo</th></tr></thead>
+    <tbody>
+      <tr><td><code>npm run test:unit</code></td><td>Ejecuta todos los tests unitarios e integración una sola vez</td><td>Antes de hacer push, en CI</td></tr>
+      <tr><td><code>npm run test:unit:watch</code></td><td>Modo watch: re-ejecuta al guardar archivos</td><td>Durante desarrollo activo</td></tr>
+      <tr><td><code>npm run test:unit:ui</code></td><td>Abre la interfaz gráfica de Vitest en el browser</td><td>Debugging, exploración</td></tr>
+      <tr><td><code>npm run test:e2e</code></td><td>Ejecuta todos los tests E2E (requiere app corriendo)</td><td>Validación pre-release</td></tr>
+      <tr><td><code>npm run test:e2e:ui</code></td><td>Abre Playwright UI para ver tests en tiempo real</td><td>Debugging de tests E2E</td></tr>
+      <tr><td><code>npm run test:e2e:headed</code></td><td>Corre E2E con browser visible</td><td>Debugging visual</td></tr>
+      <tr><td><code>npm run test:e2e:report</code></td><td>Abre el último reporte HTML de Playwright</td><td>Post-ejecución</td></tr>
+    </tbody>
+  </table>
+
+  <h2>9. Configuración de Vitest</h2>
+
+  <pre>// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',        // simula el DOM del browser
+    setupFiles: ['./src/tests/setup.ts'],
+    globals: true,               // describe/it/expect sin imports
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    exclude: ['e2e/**', 'node_modules/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/lib/**', 'src/hooks/**'],
+    },
+  },
+})</pre>
+
+  <h2>10. Dependencias de Testing Instaladas</h2>
+
+  <table>
+    <thead><tr><th>Paquete</th><th>Versión</th><th>Propósito</th></tr></thead>
+    <tbody>
+      <tr><td>vitest</td><td>^4.1.7</td><td>Test runner principal</td></tr>
+      <tr><td>@vitest/ui</td><td>^4.1.7</td><td>Interfaz gráfica de Vitest</td></tr>
+      <tr><td>jsdom</td><td>^29.1.1</td><td>Simulación del DOM del browser</td></tr>
+      <tr><td>@testing-library/react</td><td>^16.3.2</td><td>renderHook, waitFor, act</td></tr>
+      <tr><td>@testing-library/jest-dom</td><td>^6.9.1</td><td>Matchers de DOM (toBeInDocument, etc.)</td></tr>
+      <tr><td>@playwright/test</td><td>^1.60.0</td><td>Framework E2E</td></tr>
+    </tbody>
+  </table>
+
+  <h2>11. Tabla Resumen de Cobertura</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Módulo</th>
+        <th>Archivo fuente</th>
+        <th>Tipo de test</th>
+        <th>Tests</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Auth — Cache &amp; sesión</td>
+        <td>lib/authUtils.ts</td>
+        <td><span class="badge badge-unit">Unitario</span></td>
+        <td>15</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Socios — lógica de datos</td>
+        <td>lib/sociosUtils.ts</td>
+        <td><span class="badge badge-unit">Unitario</span></td>
+        <td>19</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Descuentos</td>
+        <td>lib/discountCalc.ts</td>
+        <td><span class="badge badge-unit">Unitario</span></td>
+        <td>11</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Congelamiento</td>
+        <td>lib/freezeCalc.ts</td>
+        <td><span class="badge badge-unit">Unitario</span></td>
+        <td>3</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Auth — Hook React</td>
+        <td>hooks/useAuth.ts</td>
+        <td><span class="badge badge-int">Integración</span></td>
+        <td>6</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Socios — Hook React</td>
+        <td>hooks/useSocios.ts</td>
+        <td><span class="badge badge-int">Integración</span></td>
+        <td>6</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Alta de Socio</td>
+        <td>hooks/useAltaSocio.ts</td>
+        <td><span class="badge badge-int">Integración</span></td>
+        <td>5</td>
+        <td><span class="badge badge-pass">✓ Passing</span></td>
+      </tr>
+      <tr>
+        <td>Login UI</td>
+        <td>e2e/tests/auth/login.spec.ts</td>
+        <td><span class="badge badge-e2e">E2E</span></td>
+        <td>En expansión</td>
+        <td><span class="badge badge-pass">✓ Activo</span></td>
+      </tr>
+      <tr>
+        <td>Nuevo Socio UI</td>
+        <td>e2e/tests/socios/nuevo-socio.spec.ts</td>
+        <td><span class="badge badge-e2e">E2E</span></td>
+        <td>En expansión</td>
+        <td><span class="badge badge-pass">✓ Activo</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 32px; padding: 16px 20px; background: #f7faf7; border: 1px solid #ddeedd; border-radius: 10px; text-align: center;">
+    <div style="font-size: 24px; font-weight: 700; color: #2D5A27; margin-bottom: 4px;">65 tests ✅ — 0 fallos</div>
+    <div style="font-size: 12px; color: #5A7060;">Ejecutados en 1.4 segundos · Vitest 4.1.7 · Mayo 2026</div>
+  </div>
+
+  <div class="page-footer">
+    <span>GMS · Estrategia de Testing &amp; CI</span>
+    <span>Página 7</span>
+  </div>
+</div>
+
+</body>
+</html>
