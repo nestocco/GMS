@@ -37,9 +37,11 @@ export class SociosPage {
   }
 
   async verModuloLecturasMontado() {
-    // MisSocios monta members-page y members-table (usa SociosList)
-    // pero no tiene members-btn-new — esa es la distinción respecto a Socios.tsx
-    await expect(this.page.getByTestId('members-page')).toBeVisible()
+    // MisSocios siempre muestra members-page (con datos) o members-empty-state (sin sucursales).
+    // Socios.tsx en error no tiene ninguno de los dos — distingue correctamente el bug de RLS.
+    const page = await this.page.getByTestId('members-page').isVisible()
+    const emptyState = await this.page.getByTestId('members-empty-state').isVisible()
+    expect(page || emptyState).toBe(true)
     await expect(this.page.getByTestId('members-btn-new')).not.toBeVisible()
   }
 
