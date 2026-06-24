@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/test-results
 
 # Playwright E2E
 e2e/.auth/
@@ -24,6 +25,7 @@ e2e/playwright-report/
 .idea
 .env
 .DS_Store
+.zip
 *.suo
 *.ntvs*
 *.njsproj
