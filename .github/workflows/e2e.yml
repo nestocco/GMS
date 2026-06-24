@@ -30,22 +30,22 @@ jobs:
 
       - name: Create e2e env file
         run: |
-          cat > e2e/.env.e2e << 'EOF'
-          PLAYWRIGHT_BASE_URL=http://localhost:5173
-          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          E2E_DUENO_EMAIL=${{ secrets.E2E_DUENO_EMAIL }}
-          E2E_DUENO_PASSWORD=${{ secrets.E2E_DUENO_PASSWORD }}
-          E2E_ENCARGADO_EMAIL=${{ secrets.E2E_ENCARGADO_EMAIL }}
-          E2E_ENCARGADO_PASSWORD=${{ secrets.E2E_ENCARGADO_PASSWORD }}
-          E2E_STAFF_EMAIL=${{ secrets.E2E_STAFF_EMAIL }}
-          E2E_STAFF_PASSWORD=${{ secrets.E2E_STAFF_PASSWORD }}
-          E2E_ENTRENADOR_EMAIL=${{ secrets.E2E_ENTRENADOR_EMAIL }}
-          E2E_ENTRENADOR_PASSWORD=${{ secrets.E2E_ENTRENADOR_PASSWORD }}
-          E2E_SOCIO_EMAIL=${{ secrets.E2E_SOCIO_EMAIL }}
-          E2E_SOCIO_PASSWORD=${{ secrets.E2E_SOCIO_PASSWORD }}
-          EOF
+          {
+            echo "PLAYWRIGHT_BASE_URL=http://localhost:5173"
+            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}"
+            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+            echo "E2E_DUENO_EMAIL=${{ secrets.E2E_DUENO_EMAIL }}"
+            echo "E2E_DUENO_PASSWORD=${{ secrets.E2E_DUENO_PASSWORD }}"
+            echo "E2E_ENCARGADO_EMAIL=${{ secrets.E2E_ENCARGADO_EMAIL }}"
+            echo "E2E_ENCARGADO_PASSWORD=${{ secrets.E2E_ENCARGADO_PASSWORD }}"
+            echo "E2E_STAFF_EMAIL=${{ secrets.E2E_STAFF_EMAIL }}"
+            echo "E2E_STAFF_PASSWORD=${{ secrets.E2E_STAFF_PASSWORD }}"
+            echo "E2E_ENTRENADOR_EMAIL=${{ secrets.E2E_ENTRENADOR_EMAIL }}"
+            echo "E2E_ENTRENADOR_PASSWORD=${{ secrets.E2E_ENTRENADOR_PASSWORD }}"
+            echo "E2E_SOCIO_EMAIL=${{ secrets.E2E_SOCIO_EMAIL }}"
+            echo "E2E_SOCIO_PASSWORD=${{ secrets.E2E_SOCIO_PASSWORD }}"
+          } > e2e/.env.e2e
 
       - name: Run E2E tests
         run: npm run test:e2e
