@@ -5,7 +5,6 @@ import Sidebar from '../../components/shared/Sidebar'
 import Topbar  from '../../components/shared/Topbar'
 import EmDesarrollo from '../../components/shared/EmDesarrollo'
 import MisSocios from './MisSocios'
-import Socios    from '../socios/Socios'   // ← Importación erronea, no se utiliza en este archivo
 
 interface Props { user: AuthUser }
 
@@ -98,7 +97,7 @@ export default function EntrenadorDashboard({ user }: Props) {
     if (path === '/dashboard' || path === '/dashboard/')
       return <EntrenadorHome user={user} />
     if (path.startsWith('/dashboard/socios'))
-      return <Socios user={user} />  // ← Debería renderiza la página de MisSocios, NO Socios, ya que Socios es para administradores. Cambiar a <MisSocios user={user} />.
+      return <MisSocios user={user} />
     if (path.startsWith('/dashboard/progreso'))
       return <EmDesarrollo seccion="Progreso Físico" descripcion="Carga de métricas físicas (peso, % grasa, perímetros) en la ficha del socio. GMS-79, GMS-91." />
     if (path.startsWith('/dashboard/clases'))
