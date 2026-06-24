@@ -39,7 +39,7 @@ function AuthRouter() {
         case 'R1_DUENO':      return <DuenoDashboard      user={user} />
         case 'R2_ENCARGADO':  return <EncargadoDashboard  user={user} />
         case 'R3_STAFF':      return <StaffDashboard      user={user} />
-        case 'R4_ENTRENADOR': return <StaffDashboard user={user} />
+        case 'R4_ENTRENADOR': return <EntrenadorDashboard user={user} />
         case 'R5_SOCIO':      return <SocioDashboard      user={user} />
         default:              return <Navigate to="/login" replace />
       }
